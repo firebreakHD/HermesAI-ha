@@ -145,7 +145,11 @@ fi
 (
     set +e
     while true; do
-        "${AGENT_CLI}" gateway run >> /data/hermes/logs/gateway.log 2>&1 &
+        # Home Assistant also uses s6. Without --no-supervise Hermes assumes
+        # its own Docker image and creates a service that requires /opt/data
+        # and a hermes OS user, neither of which exists in this add-on.
+        "${AGENT_CLI}" gateway run --no-supervise --external-supervisor \
+            >> /data/hermes/logs/gateway.log 2>&1 &
         gateway_pid=$!
         wait "${gateway_pid}"
         rc=$?

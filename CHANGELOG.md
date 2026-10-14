@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.3 — 2026-10-14
+
+- Run the Hermes gateway in foreground mode under the add-on's restart loop.
+  This prevents Hermes from creating an incompatible s6 service that expects
+  `/opt/data` and a `hermes` system user.
+
 ## 2.0.2 — 2026-10-14
 
 - Run the Hermes gateway daemon independently of the optional API server so
