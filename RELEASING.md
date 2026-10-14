@@ -1,27 +1,20 @@
 # Veröffentlichung und Updates
 
-## Mit GitHub Desktop veröffentlichen
+## Erstinstallation
 
-Die Dateien in diesem Ordner sind für
-`https://github.com/firebreakHD/HermesAI` vorbereitet. Der lokale Git-Verlauf
-wurde entfernt; du erstellst das Repository und den ersten Commit selbst.
-In GitHub Desktop:
-
-1. **File → Add local repository** wählen und genau den Ordner `HA_ADDON`
-   auswählen. Wenn GitHub Desktop meldet, dass dort noch kein Repository
-   vorhanden ist, **Create a repository here** wählen.
-2. Alle vorbereiteten Dateien mit **Commit to main** als ersten Commit speichern.
-3. **Publish repository** klicken. Als Namen `HermesAI` und als Konto
-   `firebreakHD` wählen.
-4. **Keep this code private** deaktivieren und veröffentlichen.
-5. Unter **Actions** den erfolgreichen Build abwarten.
+Das öffentliche Repository ist
+`https://github.com/firebreakHD/HermesAI-ha`. Unter **Actions** muss der
+Build für die jeweilige Architektur erfolgreich abgeschlossen sein.
 
 GitHub Actions baut `amd64` und `aarch64` und veröffentlicht die Images als
 `ghcr.io/firebreakhd/amd64-hermes-assistant:2.0.0` und
 `ghcr.io/firebreakhd/aarch64-hermes-assistant:2.0.0`. Stelle beide GHCR-Pakete
-nach dem ersten erfolgreichen Build auf **Public**. Anschließend kann
-`https://github.com/firebreakHD/HermesAI` im Home-Assistant-Add-on-Store als
-Repository hinzugefügt werden.
+nach dem ersten erfolgreichen Build einzeln auf **Public**. Dazu auf GitHub
+unter **Profil → Packages** das jeweilige Paket öffnen und unter
+**Package settings → Danger Zone → Change visibility → Public** umstellen.
+Ein öffentliches Repository allein macht GHCR-Container nicht öffentlich.
+Anschließend kann `https://github.com/firebreakHD/HermesAI-ha` im
+Home-Assistant-Add-on-Store als Repository hinzugefügt werden.
 
 ## Neue Add-on-Version
 

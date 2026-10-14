@@ -14,4 +14,4 @@
   update configuration.
 - Added multi-architecture GitHub Actions builds and GHCR publishing.
 - Added Home Assistant image labels, option translations, release instructions,
-  and GitHub repository metadata for `firebreakHD/HermesAI`.
+  and GitHub repository metadata for `firebreakHD/HermesAI-ha`.

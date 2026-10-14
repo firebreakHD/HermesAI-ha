@@ -48,10 +48,10 @@ LABEL io.hass.version="${BUILD_VERSION}" \
       io.hass.arch="${BUILD_ARCH}" \
       io.hass.name="Hermes Assistant" \
       io.hass.description="Official Hermes Agent with Web UI and terminal for Home Assistant" \
-      io.hass.url="https://github.com/firebreakHD/HermesAI" \
+      io.hass.url="https://github.com/firebreakHD/HermesAI-ha" \
       org.opencontainers.image.title="Hermes Assistant" \
       org.opencontainers.image.description="Official Hermes Agent with Web UI and terminal for Home Assistant" \
-      org.opencontainers.image.source="https://github.com/firebreakHD/HermesAI" \
+      org.opencontainers.image.source="https://github.com/firebreakHD/HermesAI-ha" \
       org.opencontainers.image.version="${BUILD_VERSION}"
 
 ENV LANG=C.UTF-8 \
