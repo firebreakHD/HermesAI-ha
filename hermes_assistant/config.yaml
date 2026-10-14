@@ -1,0 +1,69 @@
+name: Hermes Assistant
+version: "2.0.0"
+slug: hermes_assistant
+description: Official Hermes Agent with its web UI, terminal, Home Assistant tools, and current upstream updates
+url: https://github.com/firebreakHD/HermesAI
+image: ghcr.io/firebreakhd/{arch}-hermes-assistant
+
+arch:
+  - amd64
+  - aarch64
+
+startup: services
+boot: auto
+init: false
+
+ingress: true
+ingress_port: 8787
+panel_title: Hermes Agent
+panel_icon: mdi:brain
+panel_admin: true
+
+homeassistant_api: true
+hassio_api: false
+
+watchdog: "http://[HOST]:[PORT:8787]/health"
+
+map:
+  - addon_config:rw
+  - share:rw
+
+# Optional local callback relay for `hermes auth add openai-codex --browser`.
+ports:
+  8642/tcp: 8642
+  1456/tcp: null
+ports_description:
+  8642/tcp: Hermes OpenAI-compatible API for JARVIS and other clients; change the host port in the Network settings if needed.
+  1456/tcp: Optional callback bridge for Codex browser OAuth; restrict this port to your LAN.
+
+backup_exclude:
+  - "hermes/agent-code/venv/*"
+  - "hermes/agent-code/node_modules/*"
+  - "hermes/agent-code/.uv-cache/*"
+  - "hermes/webui-app/.venv/*"
+  - "hermes/webui-app/__pycache__/*"
+  - "hermes/webui/cache/*"
+  - "hermes/.cache/*"
+
+options:
+  timezone: "Europe/Vienna"
+  enable_terminal: true
+  auto_update_agent: true
+  auto_update_webui: true
+  auto_configure_mcp: true
+  api_server_enabled: true
+  api_server_key: ""
+  homeassistant_token: ""
+  watch_entities: []
+
+schema:
+  timezone: str
+  enable_terminal: bool
+  auto_update_agent: bool
+  auto_update_webui: bool
+  auto_configure_mcp: bool
+  api_server_enabled: bool
+  api_server_key: password?
+  homeassistant_token: password?
+  watch_entities:
+    - str?

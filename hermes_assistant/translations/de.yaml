@@ -1,0 +1,28 @@
+configuration:
+  timezone:
+    name: Zeitzone
+    description: IANA-Zeitzone für Hermes und geplante Aufgaben.
+  enable_terminal:
+    name: Setup-Terminal
+    description: Terminal in der Hermes WebUI anzeigen.
+  auto_update_agent:
+    name: Hermes beim Start aktualisieren
+    description: Führt beim Add-on-Start hermes update aus.
+  auto_update_webui:
+    name: WebUI beim Start aktualisieren
+    description: Holt die aktuelle WebUI vom offiziellen master-Branch.
+  auto_configure_mcp:
+    name: Home Assistant MCP einrichten
+    description: Trägt den Home-Assistant-MCP-Endpunkt in Hermes ein.
+  api_server_enabled:
+    name: Hermes API Server
+    description: Startet den authentifizierten API Server für JARVIS.
+  api_server_key:
+    name: Hermes API-Key
+    description: Starker Schlüssel für die Hermes API; denselben Wert in JARVIS eintragen.
+  homeassistant_token:
+    name: Home-Assistant-Token
+    description: Optionaler eigener Token; leer verwendet den Supervisor-Token.
+  watch_entities:
+    name: Beobachtete Entities
+    description: Liste von Home-Assistant-Entity-IDs für Hermes.
