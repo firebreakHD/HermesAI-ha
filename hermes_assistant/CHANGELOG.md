@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4 — 2026-10-14
+
+- Preserve interactive terminal commands across browser or Ingress WebSocket
+  disconnects so Codex browser authorization can finish and the result can be
+  seen after reconnecting.
+
 ## 2.0.3 — 2026-10-14
 
 - Prevent the gateway from registering Hermes' own Docker s6 service inside

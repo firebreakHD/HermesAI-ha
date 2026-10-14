@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4 — 2026-10-14
+
+- Keep the setup shell and browser OAuth listener alive when the Home Assistant
+  Ingress terminal WebSocket disconnects. Reopening the terminal reattaches to
+  the running session instead of killing the login command.
+
 ## 2.0.3 — 2026-10-14
 
 - Run the Hermes gateway in foreground mode under the add-on's restart loop.

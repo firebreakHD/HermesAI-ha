@@ -92,6 +92,15 @@ Verbindungsfehler zeigt, ersetzen Sie in der Adresszeile **nur**
 `localhost:1455` durch `<HOME-ASSISTANT-IP>:1456` und öffnen Sie die
 geänderte URL. Pfad und Abfrage müssen erhalten bleiben.
 
+Die Browser-Bestätigung bedeutet zunächst nur, dass Hermes den Rückruf
+empfangen hat. Im Terminal muss anschließend der Token-Austausch abgeschlossen
+werden. Wird die Terminal-Verbindung zwischenzeitlich getrennt, öffnen Sie
+das Setup-Terminal erneut: Ab Version 2.0.4 läuft dieselbe Shell mitsamt
+dem wartenden Login weiter. Mit `hermes auth list` können Sie danach prüfen,
+ob das Codex-Konto gespeichert wurde. Falls nicht, starten Sie den Login neu
+und verwenden Sie die neue Anmelde-URL; alte Einmalcodes lassen sich nicht
+erneut verwenden.
+
 Alternativ können Sie vor dem Login auf dem Browser-PC das Skript
 `codex-browser-callback-proxy.ps1` aus dem Repository starten; es leitet den
 Rückruf automatisch weiter. Nach erfolgreichem Login das Skript beenden und

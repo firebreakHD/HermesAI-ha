@@ -40,7 +40,7 @@ RUN git clone --depth=1 --branch "${HERMES_WEBUI_REF}" https://github.com/nesque
 
 FROM ${BUILD_FROM} AS runtime
 
-ARG BUILD_VERSION=2.0.3
+ARG BUILD_VERSION=2.0.4
 ARG BUILD_ARCH=amd64
 
 LABEL io.hass.version="${BUILD_VERSION}" \
@@ -68,7 +68,7 @@ ENV LANG=C.UTF-8 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates curl git bash jq python3 python3-yaml build-essential \
-      python3-dev libffi-dev libssl-dev openssh-client ffmpeg ripgrep nginx-light socat && \
+      python3-dev libffi-dev libssl-dev openssh-client ffmpeg ripgrep nginx-light socat tmux && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/ttyd /usr/local/bin/ttyd
@@ -86,8 +86,9 @@ RUN printf '%s\n' \
     mkdir -p /run/nginx /var/log/nginx
 
 COPY run.sh /run.sh
+COPY terminal-shell.sh /terminal-shell.sh
 COPY nginx.conf /etc/nginx/nginx.conf
-RUN chmod +x /run.sh
+RUN chmod +x /run.sh /terminal-shell.sh
 
 EXPOSE 8787 7681 8642 1456
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \

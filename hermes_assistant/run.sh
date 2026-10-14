@@ -209,16 +209,11 @@ if bashio::var.true "${ENABLE_TERMINAL}"; then
             export HERMES_HOME=/data/hermes
             export HERMES_INSTALL_DIR='${AGENT_DIR}'
             export PATH='${AGENT_DIR}/.hermes/bin:/usr/local/bin:'\"\$PATH\"
-            cd /data/hermes
-            printf '%s\\n' \\
-              'Hermes setup terminal' \\
-              '─────────────────────' \\
-              'hermes setup                           Configure a provider' \\
-              'hermes auth add openai-codex --browser Add a Codex account with browser login' \\
-              'hermes model                           Select provider/model' \\
-              'hermes update                          Update Hermes Agent' \\
-              'hermes --help                          Show all commands'
-            exec bash
+            # Keep the shell and an in-progress OAuth listener alive when
+            # Home Assistant or the browser drops the terminal WebSocket.
+            tmux new-session -d -s hermes-setup -c /data/hermes /terminal-shell.sh 2>/dev/null || true
+            tmux set-option -t hermes-setup status off
+            exec tmux attach-session -t hermes-setup
         " &
 fi
 
