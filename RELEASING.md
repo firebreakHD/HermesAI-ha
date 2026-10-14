@@ -2,16 +2,19 @@
 
 ## Mit GitHub Desktop veröffentlichen
 
-Das Git-Repository in diesem Ordner ist für
-`https://github.com/firebreakHD/HermesAI` vorgesehen. Der erste Commit ist
-bereits vorhanden. In GitHub Desktop:
+Die Dateien in diesem Ordner sind für
+`https://github.com/firebreakHD/HermesAI` vorbereitet. Der lokale Git-Verlauf
+wurde entfernt; du erstellst das Repository und den ersten Commit selbst.
+In GitHub Desktop:
 
 1. **File → Add local repository** wählen und genau den Ordner `HA_ADDON`
-   auswählen.
-2. **Publish repository** klicken. Als Namen `HermesAI` und als Konto
+   auswählen. Wenn GitHub Desktop meldet, dass dort noch kein Repository
+   vorhanden ist, **Create a repository here** wählen.
+2. Alle vorbereiteten Dateien mit **Commit to main** als ersten Commit speichern.
+3. **Publish repository** klicken. Als Namen `HermesAI` und als Konto
    `firebreakHD` wählen.
-3. **Keep this code private** deaktivieren und veröffentlichen.
-4. Unter **Actions** den erfolgreichen Build abwarten.
+4. **Keep this code private** deaktivieren und veröffentlichen.
+5. Unter **Actions** den erfolgreichen Build abwarten.
 
 GitHub Actions baut `amd64` und `aarch64` und veröffentlicht die Images als
 `ghcr.io/firebreakhd/amd64-hermes-assistant:2.0.0` und

@@ -16,9 +16,9 @@ aktualisiert den persistenten Agent-Code unabhängig vom Add-on-Image.
 - `RELEASING.md`: GitHub-Veröffentlichung und Versionsablauf
 - `THIRD_PARTY.md`: verwendete Upstream-Projekte und Lizenzen
 
-Das Repository ist für `firebreakHD/HermesAI` konfiguriert. Öffne den Ordner
-`HA_ADDON` in GitHub Desktop über **File → Add local repository** und wähle
-**Publish repository** mit dem Namen `HermesAI`. Die Veröffentlichung und
+Die Dateien sind für `firebreakHD/HermesAI` vorbereitet. Erstelle aus dem Ordner
+`HA_ADDON` in GitHub Desktop ein neues lokales Repository, erstelle dort den
+ersten Commit und veröffentliche es als `HermesAI`. Die einzelnen Schritte und
 spätere Updates stehen in [RELEASING.md](RELEASING.md).
 
 ## Installieren
