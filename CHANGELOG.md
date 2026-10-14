@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 — 2026-10-14
+
+- Run the Hermes gateway daemon independently of the optional API server so
+  scheduled jobs continue to fire.
+- Connect the WebUI gateway health probe to the local API server with the
+  configured bearer key when the API server is enabled.
+
 ## 2.0.1 — 2026-10-14
 
 - Fixed startup when `watch_entities` is empty or contains multiple entries.

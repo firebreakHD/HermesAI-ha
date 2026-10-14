@@ -25,7 +25,7 @@ festgelegt.
 | `auto_update_agent` | Führt `hermes update` beim Start aus |
 | `auto_update_webui` | Aktualisiert den separaten WebUI-Checkout beim Start vom offiziellen `master`-Branch |
 | `auto_configure_mcp` | Registriert Home Assistant MCP unter `/api/mcp` in Hermes |
-| `api_server_enabled` | Startet Hermes' OpenAI-kompatiblen API Server für JARVIS und andere Clients |
+| `api_server_enabled` | Aktiviert Hermes' OpenAI-kompatiblen API Server für JARVIS und andere Clients; der Gateway-Daemon für geplante Jobs läuft auch bei deaktivierter API |
 | `api_server_key` | Starker API-Schlüssel für den Hermes API Server; denselben Wert in JARVIS eintragen |
 | `homeassistant_token` | Optionaler eigener Long-Lived Access Token; leer nutzt den Supervisor-Token |
 | `watch_entities` | Optionale Liste zu überwachender Entity-IDs |
@@ -63,8 +63,16 @@ Für Clients außerhalb des Home-Assistant-Add-on-Netzes verwendest du
 ändern. Die interne Add-on-Adresse folgt dem von Home Assistant dokumentierten
 Schema `{REPO}_{SLUG}` als DNS-Name mit Bindestrichen.
 
-Gateway-Ausgaben werden nach `/data/hermes/logs/api-server.log` geschrieben;
-der API-Schlüssel wird nicht protokolliert.
+## Gateway und geplante Jobs
+
+Der Gateway-Daemon startet mit dem Add-on und führt geplante Hermes-Jobs aus
+dem Tasks-Bereich aus. Ist `api_server_enabled` aktiviert, prüft die WebUI
+seinen Zustand über `http://127.0.0.1:8642/health/detailed` mit dem
+konfigurierten API-Schlüssel. Der bisherige WebUI-Chat bleibt im selben
+Bedienmodus. Im Add-on-Terminal zeigt `hermes gateway status` den
+Daemon-Zustand an. Gateway-Ausgaben stehen in
+`/data/hermes/logs/gateway.log`; der API-Schlüssel wird dort nicht
+protokolliert.
 
 ## Codex-Browser-Login
 

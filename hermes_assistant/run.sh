@@ -132,21 +132,27 @@ if bashio::var.true "${AUTO_UPDATE_WEBUI}" && [ -d "${WEBUI_DIR}/.git" ]; then
     ) || bashio::log.warning 'Web UI update failed; starting the installed version'
 fi
 
+mkdir -p /data/hermes/logs
 if bashio::var.true "${API_SERVER_ENABLED}"; then
-    mkdir -p /data/hermes/logs
-    bashio::log.info 'Starting the Hermes OpenAI-compatible API server on 0.0.0.0:8642'
-    (
-        set +e
-        while true; do
-            "${AGENT_CLI}" gateway run >> /data/hermes/logs/api-server.log 2>&1 &
-            gateway_pid=$!
-            wait "${gateway_pid}"
-            rc=$?
-            bashio::log.warning "Hermes gateway exited with ${rc}; restarting in 5 seconds"
-            sleep 5
-        done
-    ) &
+    bashio::log.info 'Starting the Hermes gateway daemon and API server on 0.0.0.0:8642'
+    # The WebUI health probe needs an explicit URL and the same bearer key.
+    # Browser chat keeps its existing in-process backend.
+    export HERMES_API_URL=http://127.0.0.1:8642
+    export HERMES_WEBUI_GATEWAY_API_KEY="${API_SERVER_KEY}"
+else
+    bashio::log.info 'Starting the Hermes gateway daemon for scheduled jobs (API server disabled)'
 fi
+(
+    set +e
+    while true; do
+        "${AGENT_CLI}" gateway run >> /data/hermes/logs/gateway.log 2>&1 &
+        gateway_pid=$!
+        wait "${gateway_pid}"
+        rc=$?
+        bashio::log.warning "Hermes gateway exited with ${rc}; restarting in 5 seconds"
+        sleep 5
+    done
+) &
 
 AGENT_PYTHON=$(python3 - "${AGENT_DIR}" <<'PY'
 import sys

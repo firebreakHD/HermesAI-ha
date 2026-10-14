@@ -40,7 +40,7 @@ RUN git clone --depth=1 --branch "${HERMES_WEBUI_REF}" https://github.com/nesque
 
 FROM ${BUILD_FROM} AS runtime
 
-ARG BUILD_VERSION=2.0.1
+ARG BUILD_VERSION=2.0.2
 ARG BUILD_ARCH=amd64
 
 LABEL io.hass.version="${BUILD_VERSION}" \

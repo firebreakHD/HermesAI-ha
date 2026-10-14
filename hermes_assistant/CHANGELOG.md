@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.2 — 2026-10-14
+
+- Keep the gateway daemon running for scheduled tasks even when the API server
+  is disabled.
+- Give the WebUI its local gateway URL and API key for an accurate status pill.
+
 ## 2.0.1 — 2026-10-14
 
 - Fixed the startup crash while reading an empty or populated

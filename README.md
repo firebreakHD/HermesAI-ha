@@ -119,4 +119,7 @@ Das Add-on verwendet Home Assistant Ingress für WebUI und Terminal. Der
 Terminal-Link sitzt direkt in der WebUI. Supervisor stellt den HA-Token
 automatisch bereit; optional wird die MCP-Integration von Home Assistant in
 Hermes registriert. `watch_entities` kann für die Hermes-Home-Assistant-
-Plattform gesetzt werden.
+Plattform gesetzt werden. Der Hermes-Gateway-Daemon läuft im Hintergrund für
+geplante Jobs; der API-Server auf Port `8642` ist separat über
+`api_server_enabled` steuerbar. `hermes gateway status` im Add-on-Terminal
+zeigt den Zustand des Daemons an.
