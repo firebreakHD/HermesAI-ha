@@ -16,16 +16,17 @@ aktualisiert den persistenten Agent-Code unabhängig vom Add-on-Image.
 - `RELEASING.md`: GitHub-Veröffentlichung und Versionsablauf
 - `THIRD_PARTY.md`: verwendete Upstream-Projekte und Lizenzen
 
-Das Repository ist für `firebreakHD/HermesAI` konfiguriert. Nach dem ersten
-Image-Push müssen beide GHCR-Pakete öffentlich gestellt werden, damit Home
-Assistant die Images laden kann. Der genaue Ablauf steht in
-[RELEASING.md](RELEASING.md).
+Das Repository ist für `firebreakHD/HermesAI` konfiguriert. Öffne den Ordner
+`HA_ADDON` in GitHub Desktop über **File → Add local repository** und wähle
+**Publish repository** mit dem Namen `HermesAI`. Die Veröffentlichung und
+spätere Updates stehen in [RELEASING.md](RELEASING.md).
 
 ## Installieren
 
-1. Dieses Verzeichnis als Repository
-   `https://github.com/firebreakHD/HermesAI` veröffentlichen und die
-   GitHub-Action bis zum erfolgreichen Image-Build abwarten.
+1. Dieses Verzeichnis in GitHub Desktop als öffentliches Repository
+   `firebreakHD/HermesAI` veröffentlichen und die GitHub-Action bis zum
+   erfolgreichen Image-Build abwarten. Danach beide GHCR-Pakete auf
+   **Public** stellen.
 2. In Home Assistant: **Einstellungen → Add-ons → Add-on-Store → ⋮ → Repositories**.
 3. Die URL des neuen GitHub-Repositories hinzufügen und **Hermes Assistant**
    installieren.

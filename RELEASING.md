@@ -1,23 +1,17 @@
 # Veröffentlichung und Updates
 
-## Erster GitHub-Push
+## Mit GitHub Desktop veröffentlichen
 
 Das Git-Repository in diesem Ordner ist für
-`https://github.com/firebreakHD/HermesAI` vorgesehen. Erstelle auf GitHub
-ein leeres öffentliches Repository mit diesem Namen und lade den lokalen
-`main`-Branch hoch:
+`https://github.com/firebreakHD/HermesAI` vorgesehen. Der erste Commit ist
+bereits vorhanden. In GitHub Desktop:
 
-```sh
-git push -u origin main
-```
-
-Warte auf den erfolgreichen GitHub-Actions-Build. Anschließend den Release-Tag
-für die Versionsnummer setzen:
-
-```sh
-git tag v2.0.0
-git push origin v2.0.0
-```
+1. **File → Add local repository** wählen und genau den Ordner `HA_ADDON`
+   auswählen.
+2. **Publish repository** klicken. Als Namen `HermesAI` und als Konto
+   `firebreakHD` wählen.
+3. **Keep this code private** deaktivieren und veröffentlichen.
+4. Unter **Actions** den erfolgreichen Build abwarten.
 
 GitHub Actions baut `amd64` und `aarch64` und veröffentlicht die Images als
 `ghcr.io/firebreakhd/amd64-hermes-assistant:2.0.0` und
@@ -32,7 +26,9 @@ Repository hinzugefügt werden.
    `BUILD_VERSION`-Standard im Dockerfile erhöhen.
 2. Die Änderung in `CHANGELOG.md` und
    `hermes_assistant/CHANGELOG.md` beschreiben.
-3. Auf `main` committen und einen passenden Tag wie `v2.0.1` pushen.
+3. Die Änderungen in GitHub Desktop committen und `main` mit
+   **Push origin** hochladen. Der Workflow baut und veröffentlicht die neue
+   Versionsnummer automatisch.
 4. Nach erfolgreichem GitHub-Action-Build den Home-Assistant-Add-on-Store neu
    laden. Die höhere Versionsnummer macht das Update sichtbar.
 
