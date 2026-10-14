@@ -67,16 +67,15 @@ Terminal mit `hermes gateway status` prüfen.
 
 | Komponente | Aktualisierung |
 | --- | --- |
-| Home Assistant Add-on | Über Home Assistant, nachdem der [GitHub Actions Build](https://github.com/firebreakHD/HermesAI-ha/actions/workflows/build.yml) für die neue Version erfolgreich abgeschlossen ist. |
+| Home Assistant Add-on | Über Home Assistant, nachdem der [GitHub Actions Build](https://github.com/firebreakHD/HermesAI-ha/actions/workflows/build.yml) beide Images veröffentlicht und die neue Version freigegeben hat. |
 | Hermes Agent | `hermes update` im Add-on Terminal oder `auto_update_agent` beim Start. |
 | Hermes WebUI | `auto_update_webui` aktualisiert den separaten WebUI-Quellcode beim Start. |
 
-Eine neue Versionsnummer im Repository kann schon sichtbar sein, während das
-zugehörige Container Image noch gebaut wird. In diesem Zeitraum kann ein
-Home Assistant Update mit einem Pull Fehler scheitern. Nach dem erfolgreichen
-Build das Add-on Repository in Home Assistant neu laden und das Update erneut
-starten. Die genaue Ursache steht im **Supervisor Protokoll**; die allgemeine
-WebSocket Meldung von `update.install` allein reicht zur Diagnose nicht aus.
+Neue Add-on-Versionen werden im Repository erst sichtbar, wenn die Images für
+`amd64` und `aarch64` gebaut und öffentlich abrufbar sind. Bei einem Fehler
+in Home Assistant zeigt das **Supervisor Protokoll** die konkrete Ursache;
+die allgemeine WebSocket Meldung von `update.install` allein reicht zur
+Diagnose nicht aus.
 
 ## Projekt und Herkunft
 
