@@ -68,21 +68,28 @@ der API-Schlüssel wird nicht protokolliert.
 
 ## Codex-Browser-Login
 
-Der Browser-Flow nutzt OpenAIs OAuth-Rückruf `localhost:1455`. Bei einem
-Add-on-Terminal müssen Sie den Rückruf über den optionalen Host-Port `1456`
-weiterleiten. Der Port ist standardmäßig nicht veröffentlicht. Ordnen Sie ihn
-für die Dauer des Login-Vorgangs in der Netzwerk-Konfiguration des Add-ons
-`1456/tcp` zu und starten Sie auf dem Browser-PC
-`codex-browser-callback-proxy.ps1` aus dem Repository. Anschließend im
-Add-on-Terminal:
+Der Browser-Flow nutzt OpenAIs OAuth-Rückruf `localhost:1455`. Hermes wartet
+im Add-on-Container auf einen HTTP-Aufruf; die Rückgabe-URL in das wartende
+Terminal einzufügen reicht nicht. Ordnen Sie in der Netzwerk-Konfiguration
+des Add-ons `1456/tcp` dem Host-Port `1456` zu und starten Sie das Add-on neu.
+Dann im Add-on-Terminal:
 
 ```sh
 hermes auth add openai-codex --browser
 ```
 
-Nach erfolgreichem Login das Skript beenden und die Port-Zuordnung wieder
-entfernen. Der Browser-PC und Home Assistant müssen sich im selben
-vertrauenswürdigen LAN befinden.
+Öffnen Sie die angezeigte Anmelde-URL auf dem Browser-PC. Falls der Browser
+danach bei `http://localhost:1455/auth/callback?code=...&state=...` einen
+Verbindungsfehler zeigt, ersetzen Sie in der Adresszeile **nur**
+`localhost:1455` durch `<HOME-ASSISTANT-IP>:1456` und öffnen Sie die
+geänderte URL. Pfad und Abfrage müssen erhalten bleiben.
+
+Alternativ können Sie vor dem Login auf dem Browser-PC das Skript
+`codex-browser-callback-proxy.ps1` aus dem Repository starten; es leitet den
+Rückruf automatisch weiter. Nach erfolgreichem Login das Skript beenden und
+die Port-Zuordnung wieder entfernen. Die Rückgabe-URL mit ihrem einmaligen
+Anmeldecode nicht teilen. Der Browser-PC und Home Assistant müssen sich im
+selben vertrauenswürdigen LAN befinden.
 
 ## Persistenz und Updates
 

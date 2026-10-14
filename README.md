@@ -71,26 +71,38 @@ hermes auth add openai-codex --browser
 ```
 
 OpenAI leitet den Browser fest an `http://localhost:1455/auth/callback`
-zurück. Weil Hermes in einem Add-on-Container läuft, muss der Browser-PC
-während dieses Login-Vorgangs den lokalen Callback-Port zum Add-on weiterleiten:
+zurück. Hermes wartet im Add-on-Container auf einen HTTP-Aufruf dieser Adresse;
+das Einfügen der Rückgabe-URL in die laufende Terminaleingabe reicht nicht.
+So geht es ohne zusätzliches Skript:
 
 1. In der Add-on-Netzwerk-Konfiguration den optionalen Port `1456/tcp` auf
-   Host-Port `1456` abbilden. Port `1456` ist standardmäßig **nicht** geöffnet.
-2. Das beiliegende Skript auf dem Windows-PC starten, auf dem der Browser läuft:
+   Host-Port `1456` abbilden und das Add-on neu starten. Port `1456` ist
+   standardmäßig **nicht** geöffnet.
+2. Im Add-on-Terminal `hermes auth add openai-codex --browser` starten und die
+   angezeigte Anmelde-URL auf dem Browser-PC öffnen. Das Terminal wartet nun
+   auf den Rückruf.
+3. Nach dem Login zeigt der Browser möglicherweise einen Verbindungsfehler bei
+   `http://localhost:1455/auth/callback?code=...&state=...`. In der Adresszeile
+   **nur** `localhost:1455` durch `<HOME-ASSISTANT-IP>:1456` ersetzen; Pfad und
+   gesamte Abfrage unverändert lassen. Die geänderte URL öffnen. Das Add-on
+   leitet den Rückruf intern an Hermes weiter.
+4. Nach erfolgreichem Login die Port-Abbildung `1456/tcp` wieder entfernen.
 
-   ```powershell
-   .\codex-browser-callback-proxy.ps1 -HomeAssistantHost 192.168.1.20
-   ```
+Alternativ kann der Rückruf automatisch weitergeleitet werden. Dafür nach
+Schritt 1 **vor** dem Öffnen der Anmelde-URL das beiliegende Skript auf dem
+Browser-PC starten:
 
-   `192.168.1.20` durch die IP-Adresse von Home Assistant ersetzen.
-3. Im Add-on-Terminal `hermes auth add openai-codex --browser` starten und im
-   selben Browser-PC die angezeigte OpenAI-Anmeldeseite verwenden.
-4. Nach erfolgreichem Login das PowerShell-Skript beenden und die
-   Port-Abbildung `1456/tcp` wieder entfernen.
+```powershell
+.\codex-browser-callback-proxy.ps1 -HomeAssistantHost 192.168.1.20
+```
 
-Das Skript leitet nur den OAuth-Rückruf weiter. Es speichert weder Kennwörter
-noch Tokens. Die Port-Abbildung sollte nur während des Login-Vorgangs und nur
-im vertrauenswürdigen Heimnetz aktiviert sein.
+`192.168.1.20` durch die IP-Adresse von Home Assistant ersetzen. Nach dem
+Login das Skript beenden und die Port-Abbildung entfernen.
+
+Die Rückgabe-URL enthält einen einmaligen Anmeldecode: nicht in Chats oder Logs
+teilen. Das Skript speichert weder Kennwörter noch Tokens. Die Port-Abbildung
+sollte nur während des Login-Vorgangs und nur im vertrauenswürdigen Heimnetz
+aktiviert sein.
 
 ## Aktualisieren
 
