@@ -7,8 +7,8 @@ Das öffentliche Repository ist
 Build für die jeweilige Architektur erfolgreich abgeschlossen sein.
 
 GitHub Actions baut `amd64` und `aarch64` und veröffentlicht die Images als
-`ghcr.io/firebreakhd/amd64-hermes-assistant:2.0.0` und
-`ghcr.io/firebreakhd/aarch64-hermes-assistant:2.0.0`. Stelle beide GHCR-Pakete
+`ghcr.io/firebreakhd/amd64-hermes-assistant:<VERSION>` und
+`ghcr.io/firebreakhd/aarch64-hermes-assistant:<VERSION>`. Stelle beide GHCR-Pakete
 nach dem ersten erfolgreichen Build einzeln auf **Public**. Dazu auf GitHub
 unter **Profil → Packages** das jeweilige Paket öffnen und unter
 **Package settings → Danger Zone → Change visibility → Public** umstellen.

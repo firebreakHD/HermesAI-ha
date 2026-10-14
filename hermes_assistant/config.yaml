@@ -1,5 +1,5 @@
 name: Hermes Assistant
-version: "2.0.0"
+version: "2.0.1"
 slug: hermes_assistant
 description: Official Hermes Agent with its web UI, terminal, Home Assistant tools, and current upstream updates
 url: https://github.com/firebreakHD/HermesAI-ha

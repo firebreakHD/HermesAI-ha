@@ -83,7 +83,9 @@ if [ ! -f "${HERMES_CONFIG}" ]; then
     fi
 fi
 
-WATCH_ENTITIES=$(bashio::config 'watch_entities' | jq -c '.')
+# bashio::config emits an empty string for [] and separate values for populated
+# arrays. Read the original options JSON so Python always receives one array.
+WATCH_ENTITIES=$(jq -c '.watch_entities // []' /data/options.json)
 python3 - "${HERMES_CONFIG}" "${HASS_URL}" "${HA_TOKEN}" "${WATCH_ENTITIES}" "${AUTO_CONFIGURE_MCP}" <<'PY'
 import json
 import sys

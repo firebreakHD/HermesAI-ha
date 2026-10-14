@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 — 2026-10-14
+
+- Fixed the startup crash while reading an empty or populated
+  `watch_entities` option.
+- Updated repository metadata to the published `HermesAI-ha` address.
+
 ## 2.0.0 — 2026-10-14
 
 - Updated the agent backend to the official NousResearch Hermes source.

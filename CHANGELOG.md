@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 — 2026-10-14
+
+- Fixed startup when `watch_entities` is empty or contains multiple entries.
+- Updated repository links to the published `firebreakHD/HermesAI-ha` address.
+
 ## 2.0.0 — 2026-10-14
 
 - Rebuilt the add-on around the current official NousResearch Hermes Agent.
