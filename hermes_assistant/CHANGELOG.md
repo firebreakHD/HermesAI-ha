@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.7
+
+- Adds local keyless MCP tools for weather forecasts, addresses, distances and driving routes. The home origin is read automatically from Home Assistant `zone.home`.
+- Creates responsive HTML previews that Hermes Desktop can display inside chat, with weather charts and one-click Google Maps, Apple Maps and OpenStreetMap links.
+- Installs a managed life-assistant skill plus `LIFE_ASSISTANT_PROMPT.txt` for predictable preview rendering and quiet late-night wellbeing reminders while an active Desktop session can see current activity.
+
 ## 2.0.6
 
 - Adds an optional authenticated `hermes serve` backend on port 9119 for the official Hermes Desktop app. Credentials are configured in the Home Assistant add-on options; the host port is assigned separately under Network.

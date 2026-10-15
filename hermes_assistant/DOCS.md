@@ -48,6 +48,7 @@ Quellen: [Hermes Bot Screen](https://github.com/NousResearch/hermes-agent/blob/0
 | --- | --- |
 | `timezone` | IANA-Zeitzone, z. B. `Europe/Vienna` |
 | `enable_terminal` | Zeigt das integrierte Terminal in der WebUI an |
+| `assistant_tools_enabled` | Aktiviert lokale Wetter-, Entfernungs-, Routen- und Kartenwerkzeuge ohne API-Schlüssel; standardmäßig aktiv |
 | `auto_update_agent` | Führt `hermes update` beim Start aus |
 | `auto_update_webui` | Aktualisiert den separaten WebUI-Checkout beim Start vom offiziellen `master`-Branch |
 | `auto_configure_mcp` | Registriert Home Assistant MCP unter `/api/mcp` in Hermes |
@@ -73,6 +74,21 @@ Die offizielle Desktop-App nutzt Hermes' JSON-RPC/WebSocket-Backend von `hermes 
 4. In Hermes Desktop unter **Settings → Gateways → Remote gateway** die Adresse `http://<HOME-ASSISTANT-IP>:<DESKTOP-HOST-PORT>` eintragen, mit Benutzername und Passwort anmelden und die Verbindung speichern.
 
 Der Signaturschlüssel für Desktop-Sitzungen wird einmalig unter `/data/hermes/.desktop-signing-secret` mit Dateirechten `0600` erzeugt. Damit bleiben Anmeldungen über Add-on-Neustarts hinweg gültig. Die Zugangsdaten werden weder in Startmeldungen noch in Shell-Argumenten ausgegeben. Ohne aktivierte Option läuft kein Desktop-Backend; ohne Host-Port-Zuweisung ist es vom PC nicht erreichbar. Das echte Anmelden und eine Chat-Nachricht in Hermes Desktop müssen nach dem Update am PC geprüft werden.
+
+## Karten, Wege und Wetter ohne Schlüssel (Add-on 2.0.7)
+
+`assistant_tools_enabled` registriert beim Start den lokalen MCP-Server `local_assistant`. Es sind keine Konten oder API-Schlüssel nötig:
+
+- `mcp_local_assistant_route_and_maps` sucht Orte über OpenStreetMap Nominatim, berechnet eine Fahrstrecke über OSRM und liefert direkte Links für Google Maps, Apple Karten und OpenStreetMap. Ohne genannten Startpunkt nutzt das Tool automatisch Koordinaten aus Home Assistant `zone.home`.
+- `mcp_local_assistant_weather_forecast` verwendet Open-Meteo für aktuelles Wetter und bis zu sieben Tage Vorhersage.
+
+Beide Tools erzeugen unter `/data/hermes/generated` eine mobile HTML-Vorschau. Hermes Desktop kann sie mit dem zurückgegebenen `::preview`-Eintrag direkt im Chat anzeigen. Die bestehende Hermes-Aktivitätsanzeige stellt Aufruf und Ergebnis aller Tools bereits als aufklappbare Zeilen dar; Browser- und Bildschirmwerkzeuge erscheinen zusätzlich in Hermes Desktops nativer Screen-Ansicht. Die ältere Add-on-WebUI zeigt weiterhin die Textzusammenfassung und anklickbaren Kartenlinks, unterstützt aber nicht alle Desktop-Vorschau-Elemente.
+
+Die verwaltete Skill-Datei `local-life-assistant` weist Hermes an, diese Tools bei passenden Fragen automatisch zu verwenden. [LIFE_ASSISTANT_PROMPT.txt](LIFE_ASSISTANT_PROMPT.txt) kann zusätzlich in eine bestehende Unterhaltung kopiert werden, um das gewünschte Antwortformat sofort festzulegen.
+
+Späte Erinnerungen sind absichtlich an eine aktive Hermes-Desktop-Sitzung gebunden: Nur dort kann Hermes über seine Desktop-Werkzeuge aktuelle PC-Aktivität erkennen. Ein Heartbeat gehört technisch immer zu genau einer geöffneten Unterhaltung und wird daher nicht ungefragt global angelegt. Der Prompt enthält den fertigen Heartbeat-Befehl; nach ausdrücklicher Aktivierung prüft er stündlich, erinnert frühestens ab 23:30 Uhr, mit mindestens 90 Minuten Abstand und höchstens zweimal pro Nacht. Ohne sichere Aktivitätsdaten bleibt Hermes still.
+
+Beeper Desktop besitzt zwar eine lokale API und einen MCP-Server, verlangt aber das manuelle Aktivieren unter **Beeper → Settings → Developers/Integrations** und läuft nur auf dem Windows-PC. Eine automatische Server-Integration ohne diesen Schritt wäre nicht funktionsfähig und ist deshalb nicht Bestandteil des Add-ons.
 
 ## JARVIS und Hermes API
 

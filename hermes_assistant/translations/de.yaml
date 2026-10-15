@@ -8,6 +8,9 @@ configuration:
   browser_enabled:
     name: Lokaler Browser mit Übernahme
     description: Nutzt Hermes Bot Screen mit persistentem Chromium und abgesichertem Webzugang unter Werkzeuge → Browser. Benötigt etwa 1–2 GB freien RAM.
+  assistant_tools_enabled:
+    name: Lokale Karten- und Wettertools
+    description: Aktiviert Wegbeschreibungen, Entfernungen, Kartenlinks und Wetterkarten ohne API-Schlüssel oder zusätzliche Einrichtung.
   auto_update_agent:
     name: Hermes beim Start aktualisieren
     description: Führt beim Add-on-Start hermes update aus.

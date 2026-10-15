@@ -127,7 +127,7 @@ jobs:
             test -f /browser_novnc/core/rfb.js
             test -f /browser_view/index.html
             test -f /browser_view/view.js
-            python3 -m py_compile /browser_bridge.py /browser_setup.py
+            python3 -m py_compile /browser_bridge.py /browser_setup.py /assistant_tools.py
             bash -n /run.sh
           '
 

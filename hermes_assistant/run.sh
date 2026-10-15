@@ -12,6 +12,7 @@ WEBUI_DST=/data/hermes/webui-app
 TZNAME=$(bashio::config 'timezone')
 ENABLE_TERMINAL=$(bashio::config 'enable_terminal')
 BROWSER_ENABLED=$(bashio::config 'browser_enabled')
+ASSISTANT_TOOLS_ENABLED=$(bashio::config 'assistant_tools_enabled')
 AUTO_UPDATE_AGENT=$(bashio::config 'auto_update_agent')
 AUTO_UPDATE_WEBUI=$(bashio::config 'auto_update_webui')
 AUTO_CONFIGURE_MCP=$(bashio::config 'auto_configure_mcp')
@@ -62,6 +63,13 @@ export HERMES_HOME=/data/hermes
 export HERMES_INSTALL_DIR="${AGENT_DST}"
 export UV_NO_CONFIG=1
 
+if bashio::var.true "${ASSISTANT_TOOLS_ENABLED}"; then
+    mkdir -p /data/hermes/skills/local-life-assistant /data/hermes/generated
+    cp /opt/hermes-addon-skills/local-life-assistant/SKILL.md /data/hermes/skills/local-life-assistant/SKILL.md
+    chmod 700 /data/hermes/generated
+    chmod 600 /data/hermes/skills/local-life-assistant/SKILL.md
+fi
+
 if [ ! -d "${AGENT_DST}/.git" ]; then
     bashio::log.info 'Installing the pinned official Hermes Agent into persistent storage'
     cp -a /opt/hermes-agent-seed "${AGENT_DST}"
@@ -101,12 +109,12 @@ fi
 # bashio::config emits an empty string for [] and separate values for populated
 # arrays. Read the original options JSON so Python always receives one array.
 WATCH_ENTITIES=$(jq -c '.watch_entities // []' /data/options.json)
-python3 - "${HERMES_CONFIG}" "${HASS_URL}" "${HA_TOKEN}" "${WATCH_ENTITIES}" "${AUTO_CONFIGURE_MCP}" <<'PY'
+python3 - "${HERMES_CONFIG}" "${HASS_URL}" "${HA_TOKEN}" "${WATCH_ENTITIES}" "${AUTO_CONFIGURE_MCP}" "${ASSISTANT_TOOLS_ENABLED}" <<'PY'
 import json
 import sys
 import yaml
 
-path, hass_url, token, entities_json, configure_mcp = sys.argv[1:]
+path, hass_url, token, entities_json, configure_mcp, assistant_tools = sys.argv[1:]
 entities = json.loads(entities_json)
 try:
     with open(path, encoding="utf-8") as stream:
@@ -125,6 +133,20 @@ if configure_mcp == "true" and token:
         "url": f"{hass_url.rstrip('/')}/api/mcp",
         "headers": {"Authorization": f"Bearer {token}"},
     }
+if assistant_tools == "true":
+    servers = config.get("mcp_servers") or {}
+    config["mcp_servers"] = servers
+    servers["local_assistant"] = {
+        "command": "/usr/bin/python3",
+        "args": ["/assistant_tools.py"],
+        "timeout": 30,
+        "connect_timeout": 15,
+    }
+else:
+    servers = config.get("mcp_servers") or {}
+    existing = servers.get("local_assistant")
+    if existing and existing.get("command") == "/usr/bin/python3" and existing.get("args") == ["/assistant_tools.py"]:
+        del servers["local_assistant"]
 with open(path, "w", encoding="utf-8") as stream:
     yaml.safe_dump(config, stream, default_flow_style=False, sort_keys=False)
 PY

@@ -51,6 +51,7 @@ options:
   timezone: "Europe/Vienna"
   enable_terminal: true
   browser_enabled: true
+  assistant_tools_enabled: true
   auto_update_agent: true
   auto_update_webui: true
   auto_configure_mcp: true
@@ -66,6 +67,7 @@ schema:
   timezone: str
   enable_terminal: bool
   browser_enabled: bool
+  assistant_tools_enabled: bool
   auto_update_agent: bool
   auto_update_webui: bool
   auto_configure_mcp: bool

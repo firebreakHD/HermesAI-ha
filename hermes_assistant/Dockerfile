@@ -95,6 +95,9 @@ RUN printf '%s\n' \
 COPY run.sh /run.sh
 COPY browser_bridge.py /browser_bridge.py
 COPY browser_setup.py /browser_setup.py
+COPY assistant_tools.py /assistant_tools.py
+COPY LIFE_ASSISTANT_PROMPT.txt /LIFE_ASSISTANT_PROMPT.txt
+COPY life_assistant_skill /opt/hermes-addon-skills/local-life-assistant
 COPY shared-chromium.sh /usr/local/bin/hermes-shared-chromium
 COPY browser_view /browser_view
 COPY terminal-shell.sh /terminal-shell.sh

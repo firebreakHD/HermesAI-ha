@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.7 — 2026-10-16 (staged)
+
+- Add local, keyless Hermes tools for weather, addresses, distances and driving routes using Home Assistant's home location, Open-Meteo and OpenStreetMap/OSRM.
+- Generate mobile-friendly weather and route previews for Hermes Desktop, including one-click Google Maps, Apple Maps and OpenStreetMap links.
+- Install a managed life-assistant skill and a copyable prompt for consistent tool cards, previews and restrained late-night reminders in active Desktop sessions.
+
 ## 2.0.6 — 2026-10-16 (staged)
 
 - Add an optional authenticated `hermes serve` endpoint for Hermes Desktop on internal port 9119, with username and password in the Home Assistant add-on configuration and a selectable host port under Network.
