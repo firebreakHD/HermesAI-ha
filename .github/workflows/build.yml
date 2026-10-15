@@ -121,7 +121,7 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           docker run --rm --entrypoint /bin/bash "ghcr.io/firebreakhd/amd64-hermes-assistant:${VERSION}" -ec '
-            nginx -t
+            /usr/sbin/nginx -t
             test -x /usr/bin/chromium
             test -x /usr/bin/Xvnc
             test -f /browser_novnc/core/rfb.js
