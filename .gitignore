@@ -2,3 +2,8 @@
 .env
 __pycache__/
 .DS_Store
+codex dateien/CHANGELOG.md
+codex dateien/README.md
+codex dateien/RELEASE_VERSION
+codex dateien/RELEASING.md
+codex dateien/THIRD_PARTY.md
