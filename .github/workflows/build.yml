@@ -29,6 +29,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify native browser adapter and startup scripts
+        run: |
+          python -m pip install aiohttp PyYAML
+          python -m unittest discover -s hermes_assistant/tests -v
+          bash -n hermes_assistant/run.sh
+          bash -n hermes_assistant/shared-chromium.sh
+          node --input-type=module --check < hermes_assistant/browser_view/view.js
+
       - name: Compare staged and published versions
         id: version
         shell: bash
@@ -90,6 +101,7 @@ jobs:
         with:
           context: hermes_assistant
           platforms: ${{ matrix.platform }}
+          load: ${{ matrix.arch == 'amd64' }}
           build-args: |
             BUILD_FROM=${{ matrix.base }}
             BUILD_VERSION=${{ needs.prepare.outputs.version }}
@@ -102,6 +114,22 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.arch }},mode=max
           provenance: false
           sbom: false
+
+      - name: Verify browser packages and nginx in the built image
+        if: matrix.arch == 'amd64'
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          docker run --rm --entrypoint /bin/bash "ghcr.io/firebreakhd/amd64-hermes-assistant:${VERSION}" -ec '
+            nginx -t
+            test -x /usr/bin/chromium
+            test -x /usr/bin/Xvnc
+            test -f /browser_novnc/core/rfb.js
+            test -f /browser_view/index.html
+            test -f /browser_view/view.js
+            python3 -m py_compile /browser_bridge.py /browser_setup.py
+            bash -n /run.sh
+          '
 
   publish:
     name: Publish add-on version to Home Assistant

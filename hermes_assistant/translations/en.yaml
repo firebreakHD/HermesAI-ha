@@ -5,6 +5,9 @@ configuration:
   enable_terminal:
     name: Setup terminal
     description: Show the terminal in the Hermes WebUI.
+  browser_enabled:
+    name: Local browser with manual takeover
+    description: Uses Hermes Bot Screen with persistent Chromium and protected web access under Tools → Browser. Requires about 1–2 GB of free RAM.
   auto_update_agent:
     name: Update Hermes on start
     description: Runs hermes update when the app starts.

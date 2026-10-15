@@ -5,6 +5,9 @@ configuration:
   enable_terminal:
     name: Setup-Terminal
     description: Terminal in der Hermes WebUI anzeigen.
+  browser_enabled:
+    name: Lokaler Browser mit Übernahme
+    description: Nutzt Hermes Bot Screen mit persistentem Chromium und abgesichertem Webzugang unter Werkzeuge → Browser. Benötigt etwa 1–2 GB freien RAM.
   auto_update_agent:
     name: Hermes beim Start aktualisieren
     description: Führt beim Add-on-Start hermes update aus.

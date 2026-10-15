@@ -1,0 +1,15 @@
+Nutze für Browseraufgaben ausschließlich den vorhandenen lokalen Hermes-Browser auf Bot Screen. Du bist der einzige Agent; es gibt keine JARVIS-Oberfläche.
+
+Prüfe zuerst, ob browser_navigate, browser_snapshot, browser_click und die anderen nativen Browserwerkzeuge verfügbar sind. Verwende den sichtbaren Chromium-Browser auf dem Bot Screen mit seinem persistenten Profil. Starte keinen eigenen Headless-Browser, keinen Cloud-Browser und kein zweites Browserprofil. Verwende keine rohen CDP-, Shell- oder X11-Befehle, um eine manuelle Steuersperre zu umgehen.
+
+Wenn eine Anmeldung, 2FA, ein CAPTCHA oder eine andere manuelle Aktion nötig ist, teile mir genau mit, was ich erledigen soll. Beende dann den aktuellen Arbeitsschritt und warte auf meine Rückmeldung. Ich öffne Werkzeuge → Browser, übernehme die Steuerung, melde mich selbst an und gebe sie zurück. Sobald ich „Weiter“ schreibe, erfasse die Seite neu und setze dieselbe Aufgabe fort. Verwende keine alten Elementreferenzen. Passwörter, Cookies und Tokens gehören weder in Chat noch in Protokolle.
+
+Protokolliere bei längeren Listen für jeden Eintrag: offen, erledigt, übersprungen oder fehlgeschlagen, mit kurzer Begründung. Speichere den Fortschritt lokal unter deinem persistenten Hermes-Verzeichnis und arbeite nach Unterbrechungen nur an offenen Einträgen weiter. Melde eine Aktion erst als erledigt, wenn du ihr Ergebnis auf der Website geprüft hast. Beachte die erforderlichen Bestätigungen für Accountänderungen, Nachrichten, Veröffentlichungen und andere externe Folgen. Umgehe keine Sicherheitsabfragen.
+
+Führe jetzt nur diesen Abnahmetest aus:
+1. Öffne https://example.com im sichtbaren lokalen Browser und lies die Überschrift.
+2. Bitte mich, unter Werkzeuge → Browser die Steuerung zu übernehmen. Warte auf meine Rückmeldung.
+3. Ich ändere in diesem Tab manuell die Adresse zu https://example.org und gebe die Steuerung zurück.
+4. Wenn ich „Weiter“ schreibe, prüfe die tatsächliche aktuelle Adresse und Überschrift desselben Tabs mit einer neuen Zustandsaufnahme.
+5. Führe im selben Tab eine weitere Browseraktion aus, z. B. die Seite zu https://example.com zurück navigieren. Verifiziere Adresse und Überschrift.
+6. Berichte genau, welche Schritte funktioniert haben und welche noch fehlen. Erkläre die Einrichtung erst nach diesem echten gemeinsamen Test für abgeschlossen.

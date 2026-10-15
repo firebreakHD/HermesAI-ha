@@ -16,6 +16,7 @@ Verpackung, Konfiguration und Startlogik für Home Assistant.
 ## Funktionen
 
 - Hermes WebUI und Setup Terminal direkt über Home Assistant Ingress
+- Ab Add-on 2.0.5: sichtbarer lokaler Browser über **Werkzeuge → Browser**, mit manueller Übernahme und persistentem Hermes-Profil. Testauftrag: [BROWSER_PROMPT.txt](hermes_assistant/BROWSER_PROMPT.txt).
 - Offizieller Hermes Agent mit persistenten Daten unter `/data/hermes`
 - Gateway Daemon für geplante Jobs und den optionalen API Server
 - OpenAI-kompatible Hermes API für JARVIS und andere Clients auf Port `8642`

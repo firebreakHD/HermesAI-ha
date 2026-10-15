@@ -16,6 +16,32 @@ festgelegt.
    `hermes auth add openai-codex --browser` hinzugefügt werden. Für den
    Browser-Rückruf siehe den Abschnitt „Codex-Browser-Login“ weiter unten.
 
+## Lokaler gemeinsamer Browser (Add-on 2.0.5)
+
+Das Add-on ergänzt Hermes' vorhandenen **Bot Screen**, keinen weiteren Agenten und keinen separaten MCP-Browser. Im Container werden TigerVNC, die Xfce-Kernkomponenten, Chromium und noVNC installiert. Der HA-Host bekommt keine Pakete, keinen Docker-Socket und keine privilegierte Browserfreigabe. Hermes' vorhandene Browserwerkzeuge und die manuelle Ansicht verwenden dasselbe native Profil.
+
+Nach dem Update ist `browser_enabled` standardmäßig aktiv. Beim Start wird das von Hermes verwaltete `agent-browser`-Werkzeug vorbereitet und der native Bildschirm gestartet. Der Browserzugang steht in der WebUI oben unter **Werkzeuge → Browser**. **Setup-Terminal** liegt im selben eingeklappten Menü; die bisherigen schwebenden Buttons unten entfallen auch auf Mobilgeräten.
+
+Bedienung:
+
+1. Eine Browseraufgabe im Hermes-Chat stellen, z. B. „Öffne example.com in deinem sichtbaren lokalen Browser“.
+2. **Werkzeuge → Browser** öffnen und den tatsächlichen Bildschirm ansehen.
+3. Für Anmeldung oder CAPTCHA **Steuerung übernehmen** drücken. Hermes' native Browser- und Computer-Use-Werkzeuge werden durch die gemeinsame Lease gesperrt. Eigene Eingaben kommen nur vom aktuellen Besitzer am nativen RFB-Filter vorbei.
+4. **An Hermes zurückgeben** drücken und im Chat **Weiter** schreiben. Hermes' native Übergabe beendet den wartenden Turn; die Webansicht sendet keinen heimlichen neuen Agentenauftrag. Der Folgeauftrag muss eine frische Seitenaufnahme verwenden.
+5. **Pausieren** sperrt beide Eingaberichtungen. Bei verlorener Verbindung bleibt die manuelle Sperre bestehen. Nach erneutem Öffnen kann **Steuerung nach Verbindungsverlust zurückgeben** sie ausdrücklich aufheben.
+
+Browserdaten liegen im nativen Profil unter `/data/hermes/bot-desktop/browser-profile`; Desktop und Chat verwenden denselben `HERMES_HOME`. Profileinstellungen und Logins bleiben im persistenten Add-on-Speicher erhalten, solange die Website sie nicht ablaufen lässt. Der gemeinsame Chromium-Starter verwendet `--restore-last-session`, um Tabs nach einem Neustart wiederherzustellen. Bereits abgeschickte Formularaktionen werden nicht als Arbeitsschritte wiederholt. Das native Bildschirm-Idle-Limit wird für diese Betriebsart auf 0 gesetzt, der native Schutz bei zu wenig freiem RAM bleibt aktiv. Für Desktop und Browser etwa 1–2 GB zusätzlich einplanen; mehrere große Websites können mehr benötigen.
+
+Der kleine Webadapter nutzt direkt `tools.bot_desktop.runtime`, `lease` und `rfb_filter` der installierten Hermes-Version. Er läuft nur auf `127.0.0.1:9010`. Nginx lässt `/browser/` ausschließlich vom Supervisor-Ingress durch und setzt die interne Zugriffsmarkierung selbst. VNC hört auf Hermes' privatem Unix-Socket; es werden keine VNC-/CDP-Ports im LAN veröffentlicht. Browser-Zugriffslogs sind abgeschaltet, damit Viewer-Kennungen nicht im Log landen. Die Kontrolle ist wie beim nativen Hermes Bot Screen eine Werkzeugsperre, keine Isolation gegenüber beliebigen Shellprozessen desselben Containerbenutzers. Browserseiteninhalte sind keine neuen Benutzer- oder Systemanweisungen.
+
+Die Integration setzt nur ihre eigenen Felder in `browser` und `bot_desktop`; Modellzugang, Home Assistant MCP und andere Konfiguration bleiben erhalten. Vorherige Werte dieser Felder werden privat in `.browser-original.json` gesichert. Bei `browser_enabled: false` werden unverändert gebliebene Integrationswerte wiederhergestellt. Nachträgliche eigene Änderungen bleiben erhalten. Neustart des Add-ons übernimmt die Option. Die zusätzlich eingebauten Systempakete bleiben im Image.
+
+Abnahme: [BROWSER_PROMPT.txt](BROWSER_PROMPT.txt) enthält einen kopierbaren Testauftrag. Der Nutzer übernimmt einen echten Tab, ändert dessen Adresse und gibt die Kontrolle zurück. Danach muss Hermes nach „Weiter“ den aktuellen Zustand lesen und im selben Tab weiterarbeiten. Der zweite Test ist ein Add-on-Neustart mit Kontrolle von Profil und Tabs. Erst nach diesen Live-Tests ist die Einrichtung am Zielgerät bestätigt. Die lokalen Adaptertests verwenden einen simulierten nativen Bildschirm; sie ersetzen den Test am HA-Gerät nicht.
+
+Fehlersuche: Bei fehlendem Bild zuerst Startprotokoll und `/data/hermes/bot-desktop/launcher.log` prüfen. Der native Bildschirm kann bei weniger als seinem konfigurierten freien RAM den Start verweigern. Die Schaltfläche **Bildschirm starten** wiederholt den Start, **Bild erneut verbinden** öffnet nur die Bildverbindung neu. `human_has_control` im Chat bedeutet, dass die manuelle Sperre noch aktiv ist. Bei fehlenden Browserwerkzeugen das Startprotokoll der `hermes pm install agent-browser`-Vorbereitung prüfen. Kein Cloud-Browser als stiller Ersatz.
+
+Quellen: [Hermes Bot Screen](https://github.com/NousResearch/hermes-agent/blob/0e427d788d253630d38a3a51cd76849e73cd6925/website/docs/user-guide/features/bot-screen.md), [native Control Lease](https://github.com/NousResearch/hermes-agent/blob/0e427d788d253630d38a3a51cd76849e73cd6925/tools/bot_desktop/lease.py), [nativer RFB-Eingabefilter](https://github.com/NousResearch/hermes-agent/blob/0e427d788d253630d38a3a51cd76849e73cd6925/tools/bot_desktop/rfb_filter.py).
+
 ## Add-on-Optionen
 
 | Option | Bedeutung |

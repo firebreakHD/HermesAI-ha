@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.5
+
+- Integriert den vorhandenen Hermes Bot Screen mit persistentem, sichtbarem Chromium und lokaler manueller Übernahme. Keine zusätzliche Agenten- oder MCP-Browserimplementierung.
+- Fügt Bildschirm-Pakete und noVNC ausschließlich im Add-on-Image hinzu. Der Webadapter verwendet Hermes' native Laufzeit, Dateisperre und RFB-Eingabefilter; der Zugriff erfolgt nur über HA-Ingress.
+- Browser und Setup-Terminal liegen oben im einklappbaren Menü „Werkzeuge“ und verdecken mobil nicht mehr den Senden-Button.
+- Hält die Kontrolle nach Verbindungsverlust gesperrt; nach Rückgabe wird im Chat mit „Weiter“ fortgesetzt.
+- Ergänzt Konfigurationswiederherstellung, Adaptertests, Build-Prüfungen und einen kopierbaren gemeinsamen Abnahmetest.
+
 ## 2.0.4 — 2026-10-14
 
 - Preserve interactive terminal commands across browser or Ingress WebSocket

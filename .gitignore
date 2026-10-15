@@ -1,6 +1,8 @@
 *.log
 .env
 __pycache__/
+.browser-test-venv/
+hermes_assistant/.test-data/
 .DS_Store
 codex dateien/CHANGELOG.md
 codex dateien/README.md

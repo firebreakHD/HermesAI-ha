@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.5 — 2026-10-15 (staged)
+
+- Add the native Hermes Bot Screen with a shared persistent Chromium browser, manual takeover, and a Home Assistant Ingress viewer. No separate agent or MCP browser is introduced.
+- Move Browser and Setup Terminal into a collapsed top toolbar so they no longer cover the mobile chat composer.
+- Add native browser configuration restoration, input-lease adapter tests and image package checks. The real shared-tab takeover test remains required on the HA device.
+
 ## 2.0.4 — 2026-10-14
 
 - Keep the setup shell and browser OAuth listener alive when the Home Assistant

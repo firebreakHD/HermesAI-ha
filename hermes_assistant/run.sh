@@ -11,6 +11,7 @@ WEBUI_DST=/data/hermes/webui-app
 
 TZNAME=$(bashio::config 'timezone')
 ENABLE_TERMINAL=$(bashio::config 'enable_terminal')
+BROWSER_ENABLED=$(bashio::config 'browser_enabled')
 AUTO_UPDATE_AGENT=$(bashio::config 'auto_update_agent')
 AUTO_UPDATE_WEBUI=$(bashio::config 'auto_update_webui')
 AUTO_CONFIGURE_MCP=$(bashio::config 'auto_configure_mcp')
@@ -62,6 +63,10 @@ fi
 
 AGENT_DIR=${AGENT_DST}
 AGENT_CLI="${AGENT_DIR}/.hermes/bin/hermes"
+if bashio::var.true "${BROWSER_ENABLED}"; then
+    # The same executable/profile is used by native browser tools and Bot Screen.
+    export AGENT_BROWSER_EXECUTABLE_PATH=/usr/local/bin/hermes-shared-chromium
+fi
 
 ENV_FILE=/data/hermes/.env
 (umask 077 && touch "${ENV_FILE}")
@@ -114,6 +119,7 @@ with open(path, "w", encoding="utf-8") as stream:
     yaml.safe_dump(config, stream, default_flow_style=False, sort_keys=False)
 PY
 chmod 600 "${HERMES_CONFIG}"
+python3 /browser_setup.py "${HERMES_CONFIG}" /data/options.json
 
 WEBUI_DIR=${WEBUI_DST}
 if [ ! -d "${WEBUI_DIR}/.git" ]; then
@@ -124,6 +130,10 @@ fi
 if bashio::var.true "${AUTO_UPDATE_AGENT}" && [ -d "${AGENT_DIR}/.git" ]; then
     bashio::log.info 'Updating Hermes Agent with hermes update'
     "${AGENT_CLI}" update || bashio::log.warning 'Hermes update failed; starting the installed version'
+fi
+if bashio::var.true "${BROWSER_ENABLED}"; then
+    bashio::log.info 'Preparing Hermes native browser tooling (agent-browser)'
+    "${AGENT_CLI}" pm install agent-browser || bashio::log.warning 'Native browser tooling could not be installed; see startup output. Chat startup continues.'
 fi
 if bashio::var.true "${AUTO_UPDATE_WEBUI}" && [ -d "${WEBUI_DIR}/.git" ]; then
     (
@@ -186,6 +196,20 @@ export HERMES_WEBUI_PORT=${WEBUI_PORT}
 export HERMES_WEBUI_PYTHON="${AGENT_PYTHON}"
 export HERMES_CONFIG_PATH="${HERMES_CONFIG}"
 export HERMES_WEBUI_PRESERVE_ENV=1
+
+if bashio::var.true "${BROWSER_ENABLED}"; then
+    bashio::log.info 'Starting native Hermes Bot Screen at the protected Ingress path /browser/'
+    (
+        set +e
+        while true; do
+            "${AGENT_PYTHON}" /browser_bridge.py &
+            browser_bridge_pid=$!
+            wait "${browser_bridge_pid}"
+            bashio::log.warning 'Bot Screen web adapter exited; retrying in 5 seconds'
+            sleep 5
+        done
+    ) &
+fi
 
 bashio::log.info "Starting Hermes Web UI through Home Assistant Ingress on :${INGRESS_PORT}"
 (

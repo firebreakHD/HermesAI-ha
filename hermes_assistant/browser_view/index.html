@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Hermes Browser</title><link rel="stylesheet" href="assets/view.css"></head>
+<body>
+  <header><a href="../" class="back">← Chat</a><strong>Hermes Browser</strong><span id="state" role="status">Status wird geprüft…</span></header>
+  <nav aria-label="Browsersteuerung">
+    <button id="start">Bildschirm starten</button><button id="take">Steuerung übernehmen</button><button id="pause">Pausieren</button><button id="return">An Hermes zurückgeben</button><button id="force" hidden>Steuerung nach Verbindungsverlust zurückgeben</button><button id="reconnect">Bild erneut verbinden</button>
+  </nav>
+  <p id="hint">Du und Hermes verwenden denselben Browser. Logins werden im Hermes-Profil gespeichert.</p>
+  <div id="error" role="alert" hidden></div>
+  <main id="screen" aria-label="Livebild des Hermes-Browsers"></main>
+  <footer>Für Anmeldung oder CAPTCHA erst übernehmen. Nach der Rückgabe im Hermes-Chat „Weiter“ schreiben. Bei Verbindungsverlust bleibt Hermes gesperrt.</footer>
+  <script type="module" src="assets/view.js"></script>
+</body></html>

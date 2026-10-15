@@ -71,6 +71,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3-dev libffi-dev libssl-dev openssh-client ffmpeg ripgrep nginx-light socat tmux && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Hermes' native Bot Screen and its shared headed browser (no second agent).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      tigervnc-standalone-server xfce4-panel xfwm4 xfdesktop4 xfce4-settings \
+      xfce4-terminal dbus-x11 x11-xserver-utils x11-utils xauth fonts-dejavu-core \
+      chromium novnc && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN cp -Lr /usr/share/novnc /browser_novnc
+
 COPY --from=builder /opt/ttyd /usr/local/bin/ttyd
 COPY --from=builder /opt/ttyd-LICENSE /usr/share/doc/ttyd/LICENSE
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
@@ -86,9 +93,13 @@ RUN printf '%s\n' \
     mkdir -p /run/nginx /var/log/nginx
 
 COPY run.sh /run.sh
+COPY browser_bridge.py /browser_bridge.py
+COPY browser_setup.py /browser_setup.py
+COPY shared-chromium.sh /usr/local/bin/hermes-shared-chromium
+COPY browser_view /browser_view
 COPY terminal-shell.sh /terminal-shell.sh
 COPY nginx.conf /etc/nginx/nginx.conf
-RUN chmod +x /run.sh /terminal-shell.sh
+RUN chmod +x /run.sh /terminal-shell.sh /usr/local/bin/hermes-shared-chromium
 
 EXPOSE 8787 7681 8642 1456
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
