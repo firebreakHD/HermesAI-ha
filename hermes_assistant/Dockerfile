@@ -101,7 +101,7 @@ COPY terminal-shell.sh /terminal-shell.sh
 COPY nginx.conf /etc/nginx/nginx.conf
 RUN chmod +x /run.sh /terminal-shell.sh /usr/local/bin/hermes-shared-chromium
 
-EXPOSE 8787 7681 8642 1456
+EXPOSE 8787 7681 8642 1456 9119
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
   CMD curl -fsS http://127.0.0.1:8787/health || exit 1
 

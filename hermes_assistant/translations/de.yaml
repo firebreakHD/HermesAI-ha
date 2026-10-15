@@ -23,6 +23,15 @@ configuration:
   api_server_key:
     name: Hermes API-Key
     description: Starker Schlüssel für die Hermes API; denselben Wert in JARVIS eintragen.
+  desktop_backend_enabled:
+    name: Verbindung mit Hermes Desktop
+    description: Startet einen abgesicherten Hermes-serve-Server für die Desktop-App. Unter Netzwerk einen Host-Port für 9119/tcp eintragen.
+  desktop_username:
+    name: Desktop-Benutzername
+    description: Benutzername für die Remote-Verbindung mit Hermes Desktop.
+  desktop_password:
+    name: Desktop-Passwort
+    description: Passwort mit mindestens 16 Zeichen für Hermes Desktop. Nur im vertrauenswürdigen Heimnetz oder VPN verwenden.
   homeassistant_token:
     name: Home-Assistant-Token
     description: Optionaler eigener Token; leer verwendet den Supervisor-Token.

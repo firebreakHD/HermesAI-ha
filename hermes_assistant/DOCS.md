@@ -53,12 +53,26 @@ Quellen: [Hermes Bot Screen](https://github.com/NousResearch/hermes-agent/blob/0
 | `auto_configure_mcp` | Registriert Home Assistant MCP unter `/api/mcp` in Hermes |
 | `api_server_enabled` | Aktiviert Hermes' OpenAI-kompatiblen API Server für JARVIS und andere Clients; der Gateway-Daemon für geplante Jobs läuft auch bei deaktivierter API |
 | `api_server_key` | Starker API-Schlüssel für den Hermes API Server; denselben Wert in JARVIS eintragen |
+| `desktop_backend_enabled` | Startet den offiziellen `hermes serve`-Server für Hermes Desktop; standardmäßig aus |
+| `desktop_username` | Benutzername für die Desktop-Anmeldung |
+| `desktop_password` | Passwort mit mindestens 16 Zeichen für die Desktop-Anmeldung; unabhängig vom API-Schlüssel |
 | `homeassistant_token` | Optionaler eigener Long-Lived Access Token; leer nutzt den Supervisor-Token |
 | `watch_entities` | Optionale Liste zu überwachender Entity-IDs |
 
 Die MCP-Option setzt voraus, dass die Home-Assistant-Integration „Model
 Context Protocol“ eingerichtet ist. Hermes und die WebUI teilen dieselben
 persistenten Zugangsdaten, Sitzungen und Agent-Konfigurationen.
+
+## Hermes Desktop vom PC verbinden (Add-on 2.0.6)
+
+Die offizielle Desktop-App nutzt Hermes' JSON-RPC/WebSocket-Backend von `hermes serve`. Die OpenAI-kompatible API auf Port `8642` ist dafür nicht geeignet. Das Add-on kann den Desktop-Server auf internem Port `9119` dauerhaft starten; der Gateway-Daemon für geplante Jobs läuft daneben weiter.
+
+1. In der Add-on-Konfiguration `desktop_backend_enabled` einschalten, `desktop_username` eintragen und ein eigenes `desktop_password` mit mindestens 16 Zeichen setzen. Diese Zugangsdaten sind unabhängig von `api_server_key`.
+2. Unter **Netzwerk** dem Eintrag `9119/tcp` einen Host-Port zuweisen, z. B. `9119`. Die Desktop-Verbindung nur im vertrauenswürdigen Heimnetz oder über VPN nutzen; keine öffentliche Router-Portfreigabe einrichten.
+3. Add-on neu starten. Im Startprotokoll muss „Starting authenticated Hermes Desktop backend on port 9119“ erscheinen. Bei Fehlern steht die Backend-Ausgabe unter `/data/hermes/logs/desktop-backend.log`.
+4. In Hermes Desktop unter **Settings → Gateways → Remote gateway** die Adresse `http://<HOME-ASSISTANT-IP>:<DESKTOP-HOST-PORT>` eintragen, mit Benutzername und Passwort anmelden und die Verbindung speichern.
+
+Der Signaturschlüssel für Desktop-Sitzungen wird einmalig unter `/data/hermes/.desktop-signing-secret` mit Dateirechten `0600` erzeugt. Damit bleiben Anmeldungen über Add-on-Neustarts hinweg gültig. Die Zugangsdaten werden weder in Startmeldungen noch in Shell-Argumenten ausgegeben. Ohne aktivierte Option läuft kein Desktop-Backend; ohne Host-Port-Zuweisung ist es vom PC nicht erreichbar. Das echte Anmelden und eine Chat-Nachricht in Hermes Desktop müssen nach dem Update am PC geprüft werden.
 
 ## JARVIS und Hermes API
 

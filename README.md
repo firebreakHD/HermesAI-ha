@@ -20,6 +20,7 @@ Verpackung, Konfiguration und Startlogik für Home Assistant.
 - Offizieller Hermes Agent mit persistenten Daten unter `/data/hermes`
 - Gateway Daemon für geplante Jobs und den optionalen API Server
 - OpenAI-kompatible Hermes API für JARVIS und andere Clients auf Port `8642`
+- Ab Add-on 2.0.6: optionaler, angemeldeter `hermes serve`-Zugang für die offizielle Hermes Desktop-App auf Port `9119`
 - Home Assistant Zugriff über den Supervisor Token; optionales MCP und
   überwachte Entities
 - Browser Login für Codex Konten mit
@@ -58,6 +59,7 @@ Home Assistant MCP und externen API Clients stehen in der
 | WebUI und Terminal | Home Assistant Sidebar | Läuft über Ingress; keine eigene Portfreigabe nötig. |
 | Hermes API | `http://<REPO-ID>-hermes-assistant:8642` | Interne Adresse für andere Home Assistant Add-ons, ohne `/v1` als Basisadresse. |
 | Hermes API vom Heimnetz | `http://<HOME-ASSISTANT-IP>:8642` | Benötigt den `api_server_key`; der Host Port ist in den Netzwerk Einstellungen änderbar. |
+| Hermes Desktop | `http://<HOME-ASSISTANT-IP>:<DESKTOP-HOST-PORT>` | `desktop_backend_enabled` aktivieren, Benutzername und Passwort setzen und unter Netzwerk einen Host-Port für `9119/tcp` eintragen. Nur im Heimnetz oder VPN verwenden. |
 | Codex Browser Rückruf | Host Port `1456` | Optional und standardmäßig deaktiviert; nur während des Logins benötigt. |
 
 Der Gateway Daemon läuft auch dann für geplante Aufgaben, wenn

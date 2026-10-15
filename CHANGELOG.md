@@ -1,6 +1,11 @@
 # Changelog
 
-## 2.0.5 — 2026-10-15 (staged)
+## 2.0.6 — 2026-10-16 (staged)
+
+- Add an optional authenticated `hermes serve` endpoint for Hermes Desktop on internal port 9119, with username and password in the Home Assistant add-on configuration and a selectable host port under Network.
+- Persist the Desktop session signing secret and restart the backend after unexpected exits. Port 8642 remains the separate OpenAI-compatible API.
+
+## 2.0.5 — 2026-10-15
 
 - Add the native Hermes Bot Screen with a shared persistent Chromium browser, manual takeover, and a Home Assistant Ingress viewer. No separate agent or MCP browser is introduced.
 - Move Browser and Setup Terminal into a collapsed top toolbar so they no longer cover the mobile chat composer.

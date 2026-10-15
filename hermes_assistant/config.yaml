@@ -32,9 +32,11 @@ map:
 ports:
   8642/tcp: 8642
   1456/tcp: null
+  9119/tcp: null
 ports_description:
   8642/tcp: Hermes OpenAI-compatible API for JARVIS and other clients; change the host port in the Network settings if needed.
   1456/tcp: Optional callback bridge for Codex browser OAuth; restrict this port to your LAN.
+  9119/tcp: Optional authenticated Hermes Desktop backend; assign a host port only on a trusted LAN or VPN.
 
 backup_exclude:
   - "hermes/agent-code/venv/*"
@@ -54,6 +56,9 @@ options:
   auto_configure_mcp: true
   api_server_enabled: true
   api_server_key: ""
+  desktop_backend_enabled: false
+  desktop_username: ""
+  desktop_password: ""
   homeassistant_token: ""
   watch_entities: []
 
@@ -66,6 +71,9 @@ schema:
   auto_configure_mcp: bool
   api_server_enabled: bool
   api_server_key: password?
+  desktop_backend_enabled: bool
+  desktop_username: str?
+  desktop_password: password?
   homeassistant_token: password?
   watch_entities:
     - str?

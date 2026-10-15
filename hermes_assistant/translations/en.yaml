@@ -23,6 +23,15 @@ configuration:
   api_server_key:
     name: Hermes API key
     description: Strong API key; enter the same value in JARVIS.
+  desktop_backend_enabled:
+    name: Hermes Desktop connection
+    description: Start an authenticated Hermes serve backend for the desktop app. Set a host port for 9119/tcp under Network.
+  desktop_username:
+    name: Desktop username
+    description: Username for the Hermes Desktop remote connection.
+  desktop_password:
+    name: Desktop password
+    description: Password of at least 16 characters for the Hermes Desktop remote connection. Use only on a trusted LAN or VPN.
   homeassistant_token:
     name: Home Assistant token
     description: Optional custom token; blank uses the Supervisor token.

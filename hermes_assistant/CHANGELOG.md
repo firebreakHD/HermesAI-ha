@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.6
+
+- Adds an optional authenticated `hermes serve` backend on port 9119 for the official Hermes Desktop app. Credentials are configured in the Home Assistant add-on options; the host port is assigned separately under Network.
+- Keeps the Desktop signing secret in persistent add-on storage so Desktop sessions survive restarts. The existing OpenAI-compatible API on port 8642 remains separate.
+
 ## 2.0.5
 
 - Integriert den vorhandenen Hermes Bot Screen mit persistentem, sichtbarem Chromium und lokaler manueller Übernahme. Keine zusätzliche Agenten- oder MCP-Browserimplementierung.

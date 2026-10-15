@@ -17,12 +17,22 @@ AUTO_UPDATE_WEBUI=$(bashio::config 'auto_update_webui')
 AUTO_CONFIGURE_MCP=$(bashio::config 'auto_configure_mcp')
 API_SERVER_ENABLED=$(bashio::config 'api_server_enabled')
 API_SERVER_KEY=$(bashio::config 'api_server_key')
+DESKTOP_BACKEND_ENABLED=$(bashio::config 'desktop_backend_enabled')
+DESKTOP_USERNAME=$(bashio::config 'desktop_username')
+DESKTOP_PASSWORD=$(bashio::config 'desktop_password')
 USER_HA_TOKEN=$(bashio::config 'homeassistant_token')
 
 if bashio::var.true "${API_SERVER_ENABLED}"; then
     if [ "${#API_SERVER_KEY}" -lt 16 ]; then
         bashio::log.error 'API Server is enabled but its key is missing or shorter than 16 characters. Set a strong api_server_key in the add-on options.'
         bashio::log.error 'A random key can be generated with: openssl rand -hex 32'
+        exit 1
+    fi
+fi
+
+if bashio::var.true "${DESKTOP_BACKEND_ENABLED}"; then
+    if [ -z "${DESKTOP_USERNAME}" ] || [ "${#DESKTOP_PASSWORD}" -lt 16 ]; then
+        bashio::log.error 'Hermes Desktop requires a username and a password of at least 16 characters in the add-on options.'
         exit 1
     fi
 fi
@@ -196,6 +206,32 @@ export HERMES_WEBUI_PORT=${WEBUI_PORT}
 export HERMES_WEBUI_PYTHON="${AGENT_PYTHON}"
 export HERMES_CONFIG_PATH="${HERMES_CONFIG}"
 export HERMES_WEBUI_PRESERVE_ENV=1
+
+if bashio::var.true "${DESKTOP_BACKEND_ENABLED}"; then
+    # Keep the signing key across add-on restarts so Desktop sessions survive.
+    # Credentials are passed only to this subprocess and never printed.
+    DESKTOP_SECRET_FILE=/data/hermes/.desktop-signing-secret
+    if [ ! -s "${DESKTOP_SECRET_FILE}" ]; then
+        (umask 077; python3 -c 'import secrets; print(secrets.token_hex(32))' > "${DESKTOP_SECRET_FILE}.tmp"; mv "${DESKTOP_SECRET_FILE}.tmp" "${DESKTOP_SECRET_FILE}")
+    fi
+    chmod 600 "${DESKTOP_SECRET_FILE}"
+    bashio::log.info 'Starting authenticated Hermes Desktop backend on port 9119'
+    (
+        set +e
+        while true; do
+            HERMES_DASHBOARD_BASIC_AUTH_USERNAME="${DESKTOP_USERNAME}" \
+            HERMES_DASHBOARD_BASIC_AUTH_PASSWORD="${DESKTOP_PASSWORD}" \
+            HERMES_DASHBOARD_BASIC_AUTH_SECRET="$(cat "${DESKTOP_SECRET_FILE}")" \
+                "${AGENT_CLI}" serve --host 0.0.0.0 --port 9119 \
+                >> /data/hermes/logs/desktop-backend.log 2>&1 &
+            desktop_pid=$!
+            wait "${desktop_pid}"
+            rc=$?
+            bashio::log.warning "Hermes Desktop backend exited with ${rc}; restarting in 5 seconds"
+            sleep 5
+        done
+    ) &
+fi
 
 if bashio::var.true "${BROWSER_ENABLED}"; then
     bashio::log.info 'Starting native Hermes Bot Screen at the protected Ingress path /browser/'
