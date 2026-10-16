@@ -24,7 +24,7 @@ chmod 700 "${XDG_CONFIG_HOME}" "${XDG_DATA_HOME}" "${XDG_CACHE_HOME}"
 
 cleanup() {
     set +e
-    for pid in "${BEEPER_PID:-}" "${WEBSOCKIFY_PID:-}" "${X11VNC_PID:-}" "${XVFB_PID:-}"; do
+    for pid in "${BEEPER_PID:-}" "${WEBSOCKIFY_PID:-}" "${X11VNC_PID:-}" "${WM_PID:-}" "${XVFB_PID:-}"; do
         [ -n "${pid}" ] && kill "${pid}" 2>/dev/null
     done
     rm -f "${RUNTIME_DIR}"/*.pid
@@ -32,7 +32,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 rm -f /tmp/.X98-lock /tmp/.X11-unix/X98
-Xvfb :98 -screen 0 1280x800x24 -nolisten tcp >"${LOG_DIR}/xvfb.log" 2>&1 &
+Xvfb :98 -screen 0 1600x900x24 -nolisten tcp >"${LOG_DIR}/xvfb.log" 2>&1 &
 XVFB_PID=$!
 printf '%s\n' "${XVFB_PID}" >"${RUNTIME_DIR}/xvfb.pid"
 
@@ -42,6 +42,14 @@ for _ in $(seq 1 100); do
     sleep 0.1
 done
 xdpyinfo -display :98 >/dev/null 2>&1 || { echo 'Beeper display :98 did not become ready' >&2; exit 1; }
+
+# Give Beeper normal window decorations and close/minimize controls on its
+# dedicated display. The image already contains xfwm4 for the browser desktop.
+xfwm4 --compositor=off >"${LOG_DIR}/xfwm4.log" 2>&1 &
+WM_PID=$!
+printf '%s\n' "${WM_PID}" >"${RUNTIME_DIR}/xfwm4.pid"
+sleep 1
+kill -0 "${WM_PID}" 2>/dev/null || { echo 'Beeper window manager exited during startup' >&2; exit 1; }
 
 # Both services listen on loopback only. Home Assistant exposes only nginx's
 # authenticated Ingress route; no VNC, WebSocket or debug port is published.
@@ -55,7 +63,7 @@ WEBSOCKIFY_PID=$!
 printf '%s\n' "${WEBSOCKIFY_PID}" >"${RUNTIME_DIR}/websockify.pid"
 
 while kill -0 "${XVFB_PID}" 2>/dev/null; do
-    if ! kill -0 "${X11VNC_PID}" 2>/dev/null || ! kill -0 "${WEBSOCKIFY_PID}" 2>/dev/null; then
+    if ! kill -0 "${WM_PID}" 2>/dev/null || ! kill -0 "${X11VNC_PID}" 2>/dev/null || ! kill -0 "${WEBSOCKIFY_PID}" 2>/dev/null; then
         echo 'Beeper Ingress bridge exited; restarting the complete stack' >&2
         exit 1
     fi
@@ -77,7 +85,7 @@ while kill -0 "${XVFB_PID}" 2>/dev/null; do
     BEEPER_PID=$!
     printf '%s\n' "${BEEPER_PID}" >"${RUNTIME_DIR}/beeper.pid"
     set +e
-    wait -n "${BEEPER_PID}" "${XVFB_PID}" "${X11VNC_PID}" "${WEBSOCKIFY_PID}"
+    wait -n "${BEEPER_PID}" "${XVFB_PID}" "${WM_PID}" "${X11VNC_PID}" "${WEBSOCKIFY_PID}"
     rc=$?
     set -e
     if kill -0 "${BEEPER_PID}" 2>/dev/null; then

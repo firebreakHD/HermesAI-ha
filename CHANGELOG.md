@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.10 — 2026-10-16 (staged)
+
+- Increase the dedicated Beeper display to 1600×900 and start xfwm4 so its windows have visible title-bar controls.
+
 ## 2.0.9 — 2026-10-16 (staged)
 
 - Persist and autostart the existing Beeper Linux Desktop 4.3.209 installation on its dedicated `:98` display, with its profile kept under `/data/hermes/beeper-cli/`.

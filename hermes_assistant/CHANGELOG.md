@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.10
+
+- Increases Beeper's dedicated display to 1600×900 and starts xfwm4 for usable window borders and close controls.
+
 ## 2.0.9
 
 - Makes the existing Beeper Linux Desktop 4.3.209 installation persistent across add-on restarts and updates, using display `:98` and `/data/hermes/beeper-cli/` without touching another Beeper client or linked accounts.
