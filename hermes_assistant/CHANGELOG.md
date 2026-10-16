@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.11
+
+- Increases the dedicated Beeper desktop to 1920×1200 and restores the app window within the screen after startup, so its controls and settings remain visible in the Home Assistant Ingress viewer.
+
 ## 2.0.10
 
 - Increases Beeper's dedicated display to 1600×900 and starts xfwm4 for usable window borders and close controls.

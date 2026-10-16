@@ -32,7 +32,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 rm -f /tmp/.X98-lock /tmp/.X11-unix/X98
-Xvfb :98 -screen 0 1600x900x24 -nolisten tcp >"${LOG_DIR}/xvfb.log" 2>&1 &
+Xvfb :98 -screen 0 1920x1200x24 -nolisten tcp >"${LOG_DIR}/xvfb.log" 2>&1 &
 XVFB_PID=$!
 printf '%s\n' "${XVFB_PID}" >"${RUNTIME_DIR}/xvfb.pid"
 
@@ -84,6 +84,17 @@ while kill -0 "${XVFB_PID}" 2>/dev/null; do
         --user-data-dir="${BEEPER_PROFILE}" >>"${LOG_DIR}/desktop.log" 2>&1 &
     BEEPER_PID=$!
     printf '%s\n' "${BEEPER_PID}" >"${RUNTIME_DIR}/beeper.pid"
+    # Electron restores its old 1200x800 window size after a display resize.
+    # Keep the entire Beeper window and its controls inside the dedicated screen.
+    for _ in $(seq 1 30); do
+        BEEPER_WINDOW=$(xdotool search --onlyvisible --name '^Beeper$' 2>/dev/null | head -n 1 || true)
+        if [ -n "${BEEPER_WINDOW}" ]; then
+            xdotool windowsize "${BEEPER_WINDOW}" 1840 1120
+            xdotool windowmove "${BEEPER_WINDOW}" 40 40
+            break
+        fi
+        sleep 0.5
+    done
     set +e
     wait -n "${BEEPER_PID}" "${XVFB_PID}" "${WM_PID}" "${X11VNC_PID}" "${WEBSOCKIFY_PID}"
     rc=$?
