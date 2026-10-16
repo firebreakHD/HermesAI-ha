@@ -66,7 +66,7 @@ export UV_NO_CONFIG=1
 if bashio::var.true "${ASSISTANT_TOOLS_ENABLED}"; then
     mkdir -p /data/hermes/skills/local-life-assistant /data/hermes/generated
     cp /opt/hermes-addon-skills/local-life-assistant/SKILL.md /data/hermes/skills/local-life-assistant/SKILL.md
-    chmod 700 /data/hermes/generated
+    chmod 755 /data/hermes/generated
     chmod 600 /data/hermes/skills/local-life-assistant/SKILL.md
 fi
 

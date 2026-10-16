@@ -82,13 +82,17 @@ Der Signaturschlüssel für Desktop-Sitzungen wird einmalig unter `/data/hermes/
 - `mcp_local_assistant_route_and_maps` sucht Orte über OpenStreetMap Nominatim, berechnet eine Fahrstrecke über OSRM und liefert direkte Links für Google Maps, Apple Karten und OpenStreetMap. Ohne genannten Startpunkt nutzt das Tool automatisch Koordinaten aus Home Assistant `zone.home`.
 - `mcp_local_assistant_weather_forecast` verwendet Open-Meteo für aktuelles Wetter und bis zu sieben Tage Vorhersage.
 
-Beide Tools erzeugen unter `/data/hermes/generated` eine mobile HTML-Vorschau. Hermes Desktop kann sie mit dem zurückgegebenen `::preview`-Eintrag direkt im Chat anzeigen. Die bestehende Hermes-Aktivitätsanzeige stellt Aufruf und Ergebnis aller Tools bereits als aufklappbare Zeilen dar; Browser- und Bildschirmwerkzeuge erscheinen zusätzlich in Hermes Desktops nativer Screen-Ansicht. Die ältere Add-on-WebUI zeigt weiterhin die Textzusammenfassung und anklickbaren Kartenlinks, unterstützt aber nicht alle Desktop-Vorschau-Elemente.
+Beide Tools erzeugen unter `/data/hermes/generated` eine mobile HTML-Vorschau. Hermes Desktop verarbeitet den zurückgegebenen `::preview`-Eintrag nativ. In der Home-Assistant-WebUI ersetzt ein kleiner lokaler Renderer dieselbe Textanweisung durch eine eingebettete Karte; die Dateien werden ausschließlich über den authentifizierten Ingress-Pfad `/assistant-previews/` ausgeliefert. Die bestehende Hermes-Aktivitätsanzeige stellt Aufruf und Ergebnis aller Tools bereits als aufklappbare Zeilen dar; Browser- und Bildschirmwerkzeuge erscheinen zusätzlich in Hermes Desktops nativer Screen-Ansicht.
 
 Die verwaltete Skill-Datei `local-life-assistant` weist Hermes an, diese Tools bei passenden Fragen automatisch zu verwenden. [LIFE_ASSISTANT_PROMPT.txt](LIFE_ASSISTANT_PROMPT.txt) kann zusätzlich in eine bestehende Unterhaltung kopiert werden, um das gewünschte Antwortformat sofort festzulegen.
 
 Späte Erinnerungen sind absichtlich an eine aktive Hermes-Desktop-Sitzung gebunden: Nur dort kann Hermes über seine Desktop-Werkzeuge aktuelle PC-Aktivität erkennen. Ein Heartbeat gehört technisch immer zu genau einer geöffneten Unterhaltung und wird daher nicht ungefragt global angelegt. Der Prompt enthält den fertigen Heartbeat-Befehl; nach ausdrücklicher Aktivierung prüft er stündlich, erinnert frühestens ab 23:30 Uhr, mit mindestens 90 Minuten Abstand und höchstens zweimal pro Nacht. Ohne sichere Aktivitätsdaten bleibt Hermes still.
 
 Beeper Desktop besitzt zwar eine lokale API und einen MCP-Server, verlangt aber das manuelle Aktivieren unter **Beeper → Settings → Developers/Integrations** und läuft nur auf dem Windows-PC. Eine automatische Server-Integration ohne diesen Schritt wäre nicht funktionsfähig und ist deshalb nicht Bestandteil des Add-ons.
+
+## Kompakte Kontingentanzeige
+
+Unter **Settings → Preferences** steuert der vorhandene Schalter **Show provider quota chip in composer** die schmale Anzeige neben der Modellauswahl. Sie zeigt ausschließlich das noch freie Kontingent als `5h 77%` und `W 40%`. Die Werte stammen aus derselben Anbieterabfrage wie die ausführliche Kontingentansicht; falls ein Anbieter nur „verwendet“ liefert, wird der freie Anteil als `100 − verwendet` berechnet. Auf kleinen Bildschirmen bleibt die Anzeige verkleinert in der Composer-Zeile.
 
 ## JARVIS und Hermes API
 

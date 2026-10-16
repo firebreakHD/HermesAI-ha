@@ -59,6 +59,20 @@ class AssistantToolsTest(unittest.TestCase):
             self.assertIn("WETTER", content)
             self.assertEqual(len(result["forecast"]), 2)
 
+    def test_webui_renderer_and_protected_preview_route_are_installed(self):
+        root = Path(__file__).resolve().parents[1]
+        renderer = (root / "assistant_ui.js").read_text(encoding="utf-8")
+        nginx = (root / "nginx.conf").read_text(encoding="utf-8")
+        self.assertIn("::preview", renderer)
+        self.assertIn("hermes-rich-preview-frame", renderer)
+        self.assertIn("settingsShowQuotaChip", renderer)
+        self.assertIn("remaining_percent", renderer)
+        self.assertIn("hermesQuotaStrip", renderer)
+        self.assertIn("['5h', 'W']", renderer)
+        self.assertIn("/assistant-previews/", nginx)
+        self.assertIn("alias /data/hermes/generated/$1", nginx)
+        self.assertIn("deny all", nginx)
+
 
 if __name__ == "__main__":
     unittest.main()

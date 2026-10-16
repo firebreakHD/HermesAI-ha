@@ -4,6 +4,8 @@
 
 - Adds local keyless MCP tools for weather forecasts, addresses, distances and driving routes. The home origin is read automatically from Home Assistant `zone.home`.
 - Creates responsive HTML previews that Hermes Desktop can display inside chat, with weather charts and one-click Google Maps, Apple Maps and OpenStreetMap links.
+- Teaches the Home Assistant WebUI to replace `::preview` directives with the protected inline card, including the mobile layout.
+- Extends the existing Preferences quota toggle with a slim composer indicator for both free 5-hour and weekly provider quota.
 - Installs a managed life-assistant skill plus `LIFE_ASSISTANT_PROMPT.txt` for predictable preview rendering and quiet late-night wellbeing reminders while an active Desktop session can see current activity.
 
 ## 2.0.6

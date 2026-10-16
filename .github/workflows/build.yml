@@ -39,6 +39,7 @@ jobs:
           bash -n hermes_assistant/run.sh
           bash -n hermes_assistant/shared-chromium.sh
           node --input-type=module --check < hermes_assistant/browser_view/view.js
+          node --check hermes_assistant/assistant_ui.js
 
       - name: Compare staged and published versions
         id: version
@@ -127,6 +128,7 @@ jobs:
             test -f /browser_novnc/core/rfb.js
             test -f /browser_view/index.html
             test -f /browser_view/view.js
+            test -f /assistant_ui.js
             python3 -m py_compile /browser_bridge.py /browser_setup.py /assistant_tools.py
             bash -n /run.sh
           '

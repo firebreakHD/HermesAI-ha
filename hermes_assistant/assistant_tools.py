@@ -126,13 +126,22 @@ def resolve_place(query: str | None) -> dict:
 
 def safe_name(prefix: str) -> Path:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    now = time.time()
+    for old in OUTPUT_DIR.glob("*.html"):
+        try:
+            if now - old.stat().st_mtime > 7 * 24 * 60 * 60:
+                old.unlink()
+        except OSError:
+            pass
     return OUTPUT_DIR / f"{prefix}-{int(time.time() * 1000)}.html"
 
 
 def atomic_write(path: Path, content: str) -> None:
     temp = path.with_suffix(".tmp")
     temp.write_text(content, encoding="utf-8")
-    os.chmod(temp, 0o600)
+    # Files are served only through HA-authenticated Ingress. The nginx worker
+    # needs read access inside the container.
+    os.chmod(temp, 0o644)
     temp.replace(path)
 
 
