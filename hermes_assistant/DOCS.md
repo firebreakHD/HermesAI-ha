@@ -88,7 +88,26 @@ Die verwaltete Skill-Datei `local-life-assistant` weist Hermes an, diese Tools b
 
 Späte Erinnerungen sind absichtlich an eine aktive Hermes-Desktop-Sitzung gebunden: Nur dort kann Hermes über seine Desktop-Werkzeuge aktuelle PC-Aktivität erkennen. Ein Heartbeat gehört technisch immer zu genau einer geöffneten Unterhaltung und wird daher nicht ungefragt global angelegt. Der Prompt enthält den fertigen Heartbeat-Befehl; nach ausdrücklicher Aktivierung prüft er stündlich, erinnert frühestens ab 23:30 Uhr, mit mindestens 90 Minuten Abstand und höchstens zweimal pro Nacht. Ohne sichere Aktivitätsdaten bleibt Hermes still.
 
-Beeper Desktop besitzt zwar eine lokale API und einen MCP-Server, verlangt aber das manuelle Aktivieren unter **Beeper → Settings → Developers/Integrations** und läuft nur auf dem Windows-PC. Eine automatische Server-Integration ohne diesen Schritt wäre nicht funktionsfähig und ist deshalb nicht Bestandteil des Add-ons.
+## Beeper Linux Desktop
+
+Mit `beeper_enabled` startet das Add-on die bereits eingerichtete Beeper-Linux-Installation automatisch. Es verwendet unverändert:
+
+- App: `/data/hermes/beeper-cli/apps/desktop/extracted/squashfs-root/AppRun`
+- Profil: `/data/hermes/beeper-cli/profiles/desktop/linux-desktop`
+- CLI-Konfiguration: `/data/hermes/beeper-cli/`
+- eigener Bildschirm: `:98` mit 1280 × 800 Pixeln
+
+`/data/hermes/beeper-cli/` liegt im persistenten Add-on-Speicher und wird weder bei einem Neustart noch bei einem Image-Update ersetzt. Das Add-on lädt kein unbekanntes AppImage nach und verändert weder einen Beeper-Client auf einem anderen Computer noch das vorhandene CLI-Ziel `server` oder bestehende WhatsApp-Verknüpfungen.
+
+Unter **Werkzeuge → Beeper Linux** wird der Bildschirm über noVNC geöffnet. Xvfb akzeptiert keine X11-Netzwerkverbindungen; x11vnc (`127.0.0.1:5901`) und websockify (`127.0.0.1:9011`) bleiben ausschließlich im Container und erscheinen nicht in der Home-Assistant-Portkonfiguration. Nginx akzeptiert `/beeper/` nur vom Supervisor-Ingress-Proxy. Die noVNC-WebSocket-Adresse wird aus dem aktuellen Browserpfad gebildet, damit auch ein nach Neustart wechselndes Ingress-Präfix erhalten bleibt. Ein Chromium-Debug-Port wird nicht gestartet.
+
+Anmeldung, Gerätebestätigung, Recovery-Code, Desktop-API und WhatsApp-Verknüpfung werden nicht automatisiert. Nach der eigenen Anmeldung kann die lokale API im Setup-Terminal geprüft werden:
+
+```sh
+curl -fsS http://127.0.0.1:23375/v1/info
+```
+
+Erst eine erfolgreiche Antwort bedeutet, dass das konfigurierte Ziel `linux-desktop` seine Desktop-API bereitstellt. Ein laufendes Fenster allein gilt nicht als API-Bereitschaft. Für den Neustarttest das Add-on in Home Assistant wirklich neu starten, danach **Werkzeuge → Beeper Linux** öffnen und prüfen, dass Bild und Eingabe funktionieren. In den Browser-Entwicklerwerkzeugen muss der WebSocket unter demselben `/api/hassio_ingress/<wechselndes-token>/beeper/websockify`-Pfad mit Status `101` verbunden sein.
 
 ## Kompakte Kontingentanzeige
 

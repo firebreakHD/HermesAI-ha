@@ -8,6 +8,9 @@ configuration:
   browser_enabled:
     name: Local browser with manual takeover
     description: Uses Hermes Bot Screen with persistent Chromium and protected web access under Tools → Browser. Requires about 1–2 GB of free RAM.
+  beeper_enabled:
+    name: Beeper Linux Desktop
+    description: Starts the existing persistent Beeper client on a separate screen under Tools → Beeper Linux. Sign-in and account linking remain manual.
   assistant_tools_enabled:
     name: Local maps and weather tools
     description: Enables directions, distances, map links and weather cards without API keys or additional setup.

@@ -12,6 +12,9 @@ WEBUI_DST=/data/hermes/webui-app
 TZNAME=$(bashio::config 'timezone')
 ENABLE_TERMINAL=$(bashio::config 'enable_terminal')
 BROWSER_ENABLED=$(bashio::config 'browser_enabled')
+# Existing installations do not yet have this newly added option in options.json.
+# Default it on so the already-installed persistent Beeper client survives the update.
+BEEPER_ENABLED=$(jq -r '.beeper_enabled // true' /data/options.json)
 ASSISTANT_TOOLS_ENABLED=$(bashio::config 'assistant_tools_enabled')
 AUTO_UPDATE_AGENT=$(bashio::config 'auto_update_agent')
 AUTO_UPDATE_WEBUI=$(bashio::config 'auto_update_webui')
@@ -264,6 +267,19 @@ if bashio::var.true "${BROWSER_ENABLED}"; then
             browser_bridge_pid=$!
             wait "${browser_bridge_pid}"
             bashio::log.warning 'Bot Screen web adapter exited; retrying in 5 seconds'
+            sleep 5
+        done
+    ) &
+fi
+
+if bashio::var.true "${BEEPER_ENABLED}"; then
+    bashio::log.info 'Starting persistent Beeper Linux Desktop at the protected Ingress path /beeper/'
+    (
+        set +e
+        while true; do
+            /usr/local/bin/hermes-beeper-desktop
+            rc=$?
+            bashio::log.warning "Beeper desktop stack exited with ${rc}; restarting in 5 seconds"
             sleep 5
         done
     ) &

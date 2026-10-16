@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.9 — 2026-10-16 (staged)
+
+- Persist and autostart the existing Beeper Linux Desktop 4.3.209 installation on its dedicated `:98` display, with its profile kept under `/data/hermes/beeper-cli/`.
+- Add an Ingress-only **Tools → Beeper Linux** noVNC view and retain its WebSocket path across changing Home Assistant Ingress prefixes. VNC, WebSocket and Chromium debug ports are not published.
+
 ## 2.0.8 — 2026-10-16 (staged)
 
 - Render generated route and weather previews directly inside the Home Assistant Hermes chat instead of showing the raw `::preview` directive.

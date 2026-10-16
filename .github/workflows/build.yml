@@ -38,6 +38,7 @@ jobs:
           python -m unittest discover -s hermes_assistant/tests -v
           bash -n hermes_assistant/run.sh
           bash -n hermes_assistant/shared-chromium.sh
+          bash -n hermes_assistant/beeper-desktop.sh
           node --input-type=module --check < hermes_assistant/browser_view/view.js
           node --check hermes_assistant/assistant_ui.js
 
@@ -129,8 +130,16 @@ jobs:
             test -f /browser_view/index.html
             test -f /browser_view/view.js
             test -f /assistant_ui.js
+            test -x /usr/local/bin/hermes-beeper-desktop
+            command -v Xvfb
+            command -v x11vnc
+            command -v websockify
+            grep -Fq "UI.initSetting" /browser_novnc/app/ui.js
+            grep -Fq "websockify" /browser_novnc/app/ui.js
+            ! grep -q remote-debugging-port /usr/local/bin/hermes-beeper-desktop
             python3 -m py_compile /browser_bridge.py /browser_setup.py /assistant_tools.py
             bash -n /run.sh
+            bash -n /usr/local/bin/hermes-beeper-desktop
           '
 
   publish:

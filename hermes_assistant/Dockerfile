@@ -75,7 +75,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN apt-get update && apt-get install -y --no-install-recommends \
       tigervnc-standalone-server xfce4-panel xfwm4 xfdesktop4 xfce4-settings \
       xfce4-terminal dbus-x11 x11-xserver-utils x11-utils xauth fonts-dejavu-core \
-      chromium novnc && apt-get clean && rm -rf /var/lib/apt/lists/*
+      chromium novnc xvfb x11vnc websockify libasound2 libatk-bridge2.0-0 \
+      libatk1.0-0 libcups2 libdrm2 libgbm1 libgtk-3-0 libnotify4 libnss3 \
+      libsecret-1-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 \
+      libxrandr2 && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN cp -Lr /usr/share/novnc /browser_novnc
 
 COPY --from=builder /opt/ttyd /usr/local/bin/ttyd
@@ -100,10 +103,11 @@ COPY assistant_ui.js /assistant_ui.js
 COPY LIFE_ASSISTANT_PROMPT.txt /LIFE_ASSISTANT_PROMPT.txt
 COPY life_assistant_skill /opt/hermes-addon-skills/local-life-assistant
 COPY shared-chromium.sh /usr/local/bin/hermes-shared-chromium
+COPY beeper-desktop.sh /usr/local/bin/hermes-beeper-desktop
 COPY browser_view /browser_view
 COPY terminal-shell.sh /terminal-shell.sh
 COPY nginx.conf /etc/nginx/nginx.conf
-RUN chmod +x /run.sh /terminal-shell.sh /usr/local/bin/hermes-shared-chromium
+RUN chmod +x /run.sh /terminal-shell.sh /usr/local/bin/hermes-shared-chromium /usr/local/bin/hermes-beeper-desktop
 
 EXPOSE 8787 7681 8642 1456 9119
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \

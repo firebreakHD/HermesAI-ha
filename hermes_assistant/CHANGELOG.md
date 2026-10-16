@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.9
+
+- Makes the existing Beeper Linux Desktop 4.3.209 installation persistent across add-on restarts and updates, using display `:98` and `/data/hermes/beeper-cli/` without touching another Beeper client or linked accounts.
+- Adds **Tools → Beeper Linux** through authenticated Home Assistant Ingress. X11, VNC and websockify bind inside the container only, no debug port is started, and noVNC derives its WebSocket path from the current Ingress prefix.
+
 ## 2.0.8
 
 - Teaches the Home Assistant WebUI to replace `::preview` directives with the protected inline card, including the mobile layout.
