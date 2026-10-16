@@ -1,11 +1,14 @@
 # Changelog
 
-## 2.0.7 — 2026-10-16 (staged)
+## 2.0.8 — 2026-10-16 (staged)
+
+- Render generated route and weather previews directly inside the Home Assistant Hermes chat instead of showing the raw `::preview` directive.
+- Show both free 5-hour and weekly provider quota in a compact composer row controlled by the existing Preferences toggle.
+
+## 2.0.7 — 2026-10-16
 
 - Add local, keyless Hermes tools for weather, addresses, distances and driving routes using Home Assistant's home location, Open-Meteo and OpenStreetMap/OSRM.
 - Generate mobile-friendly weather and route previews for Hermes Desktop, including one-click Google Maps, Apple Maps and OpenStreetMap links.
-- Render those generated previews directly inside the Home Assistant Hermes chat instead of showing the raw `::preview` directive.
-- Show both free 5-hour and weekly provider quota in a compact composer row controlled by the existing Preferences toggle.
 - Install a managed life-assistant skill and a copyable prompt for consistent tool cards, previews and restrained late-night reminders in active Desktop sessions.
 
 ## 2.0.6 — 2026-10-16 (staged)
