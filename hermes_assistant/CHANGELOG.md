@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.12 — 2026-11-18
+
+- Add opt-in Nextcloud Talk private chats using an app password, a sender allowlist and an optional conversation allowlist.
+- Answer text and native voice notes in one Hermes DM session. Voice uses local faster-whisper and an existing Wyoming Piper service.
+- Add separately enabled Talk calls with a supervised Chromium worker, local voice activity detection, separate call sessions and speech interruption. The worker uses the dedicated account and starts Chromium only for an authorized call.
+- Run Nextcloud Talk inside the existing add-on without an incoming port. Both Talk options are off by default.
+
 ## 2.0.11
 
 - Increases the dedicated Beeper desktop to 1920×1200 and restores the app window within the screen after startup, so its controls and settings remain visible in the Home Assistant Ingress viewer.

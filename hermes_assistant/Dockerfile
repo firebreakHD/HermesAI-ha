@@ -95,6 +95,13 @@ RUN printf '%s\n' \
     > /usr/local/bin/hermes && chmod +x /usr/local/bin/hermes && \
     mkdir -p /run/nginx /var/log/nginx
 
+COPY talk/requirements.txt /opt/hermes-talk/requirements.txt
+RUN uv venv --python /usr/bin/python3 /opt/hermes-talk/venv && \
+    uv pip install --python /opt/hermes-talk/venv/bin/python --only-binary :all: \
+      --no-cache -r /opt/hermes-talk/requirements.txt && \
+    /opt/hermes-talk/venv/bin/python -c 'import aiohttp, faster_whisper, playwright.async_api, webrtcvad, wyoming.audio'
+COPY talk/*.py talk/call_audio.js /opt/hermes-talk/
+
 COPY run.sh /run.sh
 COPY browser_bridge.py /browser_bridge.py
 COPY browser_setup.py /browser_setup.py
