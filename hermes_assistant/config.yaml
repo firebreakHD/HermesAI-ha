@@ -46,6 +46,7 @@ backup_exclude:
   - "hermes/webui-app/__pycache__/*"
   - "hermes/webui/cache/*"
   - "hermes/.cache/*"
+  - "hermes/talk/models/*"
 
 options:
   timezone: "Europe/Vienna"
@@ -63,6 +64,13 @@ options:
   desktop_password: ""
   homeassistant_token: ""
   watch_entities: []
+  talk_enabled: false
+  talk_url: ""
+  talk_username: ""
+  talk_app_password: ""
+  talk_allowed_users: []
+  talk_allowed_rooms: []
+  talk_piper_endpoint: ""
 
 schema:
   timezone: str
@@ -81,3 +89,12 @@ schema:
   homeassistant_token: password?
   watch_entities:
     - str?
+  talk_enabled: bool
+  talk_url: str?
+  talk_username: str?
+  talk_app_password: password?
+  talk_allowed_users:
+    - str
+  talk_allowed_rooms:
+    - str
+  talk_piper_endpoint: str?

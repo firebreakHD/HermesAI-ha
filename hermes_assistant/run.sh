@@ -203,6 +203,22 @@ fi
     done
 ) &
 
+if [ "$(jq -r '.talk_enabled // false' /data/options.json)" = true ]; then
+    bashio::log.info 'Starting the Nextcloud Talk worker'
+    (
+        set +e
+        while true; do
+            /opt/hermes-talk/venv/bin/python /opt/hermes-talk/talk_worker.py
+            rc=$?
+            if [ "${rc}" -eq 0 ] || [ "${rc}" -eq 2 ]; then
+                break
+            fi
+            bashio::log.warning 'Nextcloud Talk worker exited; restarting in 5 seconds'
+            sleep 5
+        done
+    ) &
+fi
+
 AGENT_PYTHON=$(python3 - "${AGENT_DIR}" <<'PY'
 import sys
 from pathlib import Path

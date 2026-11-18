@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.12 — 2026-11-18
+
+- Add opt-in Nextcloud Talk private chats using an app password, a sender allowlist and an optional conversation allowlist.
+- Answer text and native voice notes in one Hermes DM session. Voice uses local faster-whisper and an existing Wyoming Piper service.
+- Run the Talk worker inside the existing add-on without an incoming port. Live calls are not available in this release.
+
 ## 2.0.10 — 2026-10-16 (staged)
 
 - Increase the dedicated Beeper display to 1600×900 and start xfwm4 so its windows have visible title-bar controls.

@@ -44,3 +44,24 @@ configuration:
   watch_entities:
     name: Beobachtete Entities
     description: Liste von Home-Assistant-Entity-IDs für Hermes.
+  talk_enabled:
+    name: Nextcloud Talk
+    description: "Verbindet Hermes mit erlaubten privaten DMs. Standardmäßig aus."
+  talk_url:
+    name: Nextcloud-URL
+    description: "HTTPS-Basisadresse der Nextcloud, bei Bedarf mit Installationspfad."
+  talk_username:
+    name: Nextcloud-Konto-ID
+    description: "Anmelde-ID des dedizierten Hermes-Kontos."
+  talk_app_password:
+    name: Nextcloud-App-Passwort
+    description: "Eigenes App-Passwort des Hermes-Kontos mit Dateizugriff."
+  talk_allowed_users:
+    name: Erlaubte Nextcloud-Benutzer
+    description: "Anmelde-IDs der Benutzer, deren private DMs Hermes beantworten darf."
+  talk_allowed_rooms:
+    name: Erlaubte Talk-Räume
+    description: "Optionale Raumtokens. Leer erlaubt alle privaten DMs mit erlaubten Benutzern."
+  talk_piper_endpoint:
+    name: Wyoming-Piper-Endpunkt
+    description: "Interne Adresse tcp://host:port. Leer aktiviert ausschließlich Text."

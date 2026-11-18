@@ -194,3 +194,60 @@ und installierter Agent-Checkout liegen unter `/data/hermes`. `hermes update`
 aktualisiert diesen Checkout und bleibt über Add-on-Neustarts erhalten. Das
 Add-on-Image enthält einen festgelegten Hermes-Stand als Seed für die erste
 Installation.
+
+## Nextcloud Talk
+
+Die Integration verwendet das bestehende Hermes-Gateway auf Port `8642`
+und das dort konfigurierte Modell, etwa den vorhandenen Codex-Login.
+Talk verbindet sich ausgehend per HTTPS. Der Host-Port `8642/tcp` kann in
+Home Assistant leer bleiben, wenn keine anderen Geräte die Hermes-API nutzen.
+Es sind weder ein Webhook noch zusätzliche Installationsschritte nötig.
+
+1. Ein dediziertes lokales Nextcloud-Konto für Hermes anlegen. Unter **Persönliche
+   Einstellungen → Sicherheit → Geräte & Sitzungen** ein App-Passwort mit
+   Dateizugriff für das Add-on erzeugen. Die Konto-ID kann vom Anzeigenamen abweichen.
+2. In **Einstellungen → Add-ons/Apps → Hermes Assistant → Konfiguration**
+   die folgenden Optionen speichern und das Add-on neu starten.
+
+| Option | Wert |
+| --- | --- |
+| `talk_enabled` | Einschalten. Standardmäßig aus. |
+| `talk_url` | HTTPS-Basisadresse von Nextcloud, bei Unterordnern z. B. `https://cloud.example.org/nextcloud`. |
+| `talk_username` | Konto-ID von Hermes in Nextcloud. |
+| `talk_app_password` | App-Passwort des Hermes-Kontos. |
+| `talk_allowed_users` | Liste der tatsächlichen Nextcloud-Konto-IDs, die Hermes anschreiben dürfen. |
+| `talk_allowed_rooms` | Optionale Liste der Tokens aus den Talk-Raumlinks. Leer erlaubt alle lokalen 1:1-DMs mit erlaubten Benutzern. |
+| `talk_piper_endpoint` | Interne Wyoming-Adresse, z. B. `tcp://<piper-add-on-hostname>:10200`. Leer aktiviert Textbetrieb. |
+| `api_server_enabled` und `api_server_key` | API eingeschaltet lassen und den vorhandenen Schlüssel mit mindestens 16 Zeichen verwenden. |
+
+In der iPhone-App **Nextcloud Talk** mit deinem eigenen erlaubten Konto eine
+Unterhaltung mit Hermes öffnen. Nach der Talk-Verbindungsmeldung im Add-on-Protokoll
+eine neue Textnachricht senden. Teste den Kontext mit „Merke dir die Farbe Blau“
+und „Welche Farbe habe ich genannt?“. Bei eingerichtetem Piper kannst du dieselbe
+Frage als Sprachnachricht aufnehmen. Die Antwort erscheint im Gespräch als
+Sprachnachricht mit Wiedergabeknopf.
+
+Der Worker verlangt die Talk-Raum-API v4 und die Fähigkeiten `chat-v2` und
+`chat-reference-id`. Für Voice Notes kommt `voice-message-sharing` hinzu.
+Der Agent muss für `/v1/chat/completions` den authentifizierten
+`X-Hermes-Session-Id`-Header unterstützen. Die im Image gepinnte Agent-Version
+enthält diese Schnittstelle. Ein Fehler dazu im Protokoll kann bei einem
+älteren persistenten Agent-Checkout durch `hermes update` behoben werden.
+
+Whisper lädt beim ersten Gebrauch das öffentliche, mehrsprachige
+`faster-whisper-small`-Modell (ca. 470 MB). Danach bleibt es unter
+`/data/hermes/talk/models` im Cache. Audiodaten werden auf der CPU
+transkribiert. Das Transkript wird wie eine Textnachricht über das konfigurierte
+Hermes-Modell verarbeitet. Eingehendes Audio ist auf 20 MB und drei Minuten
+begrenzt. Antwortdateien bleiben im Nextcloud-Konto unter `Hermes-Talk/`,
+solange die Nachrichten sie verwenden. Wyoming Piper benötigt eine vom
+Add-on erreichbare Adresse im vertrauenswürdigen internen Netz.
+
+Bei Fehlern im Add-on-Protokoll nach **Nextcloud Talk** suchen. Die Meldungen
+unterscheiden Talk-Anmeldung, Chat, WebDAV, Whisper, Piper und Hermes-API.
+Für Calls gibt es in dieser Version keinen Schalter. Text und Voice Notes
+benötigen weder HPB noch TURN. Für spätere Calls im selben LAN ist direkte
+WebRTC-Verbindung möglich. Externe Clients hinter NAT können TURN brauchen.
+Bei konfiguriertem HPB muss dessen Signaling-WebSocket vom Add-on und vom
+anrufenden Client erreichbar sein. Teste WLAN und Mobilfunk getrennt, sobald
+ein Call-Worker vorliegt.

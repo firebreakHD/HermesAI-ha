@@ -22,6 +22,7 @@ Verpackung, Konfiguration und Startlogik für Home Assistant.
 - OpenAI-kompatible Hermes API für JARVIS und andere Clients auf Port `8642`
 - Ab Add-on 2.0.6: optionaler, angemeldeter `hermes serve`-Zugang für die offizielle Hermes Desktop-App auf Port `9119`
 - Ab Add-on 2.0.7: Wetter, Entfernungen, Wegbeschreibungen und Kartenlinks ohne API-Schlüssel; Hermes Desktop zeigt die erzeugten Karten direkt im Chat an. Startprompt: [LIFE_ASSISTANT_PROMPT.txt](hermes_assistant/LIFE_ASSISTANT_PROMPT.txt).
+- Optionaler [Nextcloud-Talk-DM mit lokalen Sprachnachrichten](hermes_assistant/DOCS.md#nextcloud-talk)
 - Home Assistant Zugriff über den Supervisor Token; optionales MCP und
   überwachte Entities
 - Browser Login für Codex Konten mit

@@ -44,3 +44,24 @@ configuration:
   watch_entities:
     name: Watched entities
     description: List of Home Assistant entity IDs for Hermes.
+  talk_enabled:
+    name: Nextcloud Talk
+    description: "Connect Hermes to allowed private direct messages. Off by default."
+  talk_url:
+    name: Nextcloud URL
+    description: "HTTPS base URL of the Nextcloud instance, including any installation path."
+  talk_username:
+    name: Nextcloud account ID
+    description: "Login ID of the dedicated Hermes account."
+  talk_app_password:
+    name: Nextcloud app password
+    description: "Dedicated Hermes app password with filesystem access."
+  talk_allowed_users:
+    name: Allowed Nextcloud users
+    description: "Login IDs of people allowed to send Hermes private direct messages."
+  talk_allowed_rooms:
+    name: Allowed Talk rooms
+    description: "Optional room tokens. Leave empty to allow all private DMs with allowed users."
+  talk_piper_endpoint:
+    name: Wyoming Piper endpoint
+    description: "Internal address tcp://host:port. Leave empty for text only."
