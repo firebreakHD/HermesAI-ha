@@ -212,6 +212,7 @@ Es sind weder ein Webhook noch zusätzliche Installationsschritte nötig.
 | Option | Wert |
 | --- | --- |
 | `talk_enabled` | Einschalten. Standardmäßig aus. |
+| `talk_calls_enabled` | Schaltet zusätzlich Live-Anrufe ein. Standardmäßig aus. Wyoming Piper ist dafür erforderlich. |
 | `talk_url` | HTTPS-Basisadresse von Nextcloud, bei Unterordnern z. B. `https://cloud.example.org/nextcloud`. |
 | `talk_username` | Konto-ID von Hermes in Nextcloud. |
 | `talk_app_password` | App-Passwort des Hermes-Kontos. |
@@ -245,9 +246,34 @@ Add-on erreichbare Adresse im vertrauenswürdigen internen Netz.
 
 Bei Fehlern im Add-on-Protokoll nach **Nextcloud Talk** suchen. Die Meldungen
 unterscheiden Talk-Anmeldung, Chat, WebDAV, Whisper, Piper und Hermes-API.
-Für Calls gibt es in dieser Version keinen Schalter. Text und Voice Notes
-benötigen weder HPB noch TURN. Für spätere Calls im selben LAN ist direkte
-WebRTC-Verbindung möglich. Externe Clients hinter NAT können TURN brauchen.
-Bei konfiguriertem HPB muss dessen Signaling-WebSocket vom Add-on und vom
-anrufenden Client erreichbar sein. Teste WLAN und Mobilfunk getrennt, sobald
-ein Call-Worker vorliegt.
+### Live-Anrufe
+
+1. Einen Text-DM mit Hermes öffnen und eine Nachricht senden.
+2. Nach erfolgreichem Voice-Note-Test `talk_calls_enabled` aktivieren und das
+   Add-on neu starten. Das Hermes-Konto muss sich mit dem App-Passwort am
+   Talk-Webclient anmelden können. Der Worker unterstützt dessen englische
+   und deutsche Anrufschaltflächen.
+3. Den Audioanruf aus dem privaten iPhone-DM starten, sprechen, eine Antwort
+   abwarten und während der nächsten Antwort erneut sprechen. Hermes stoppt
+   die laufende Ausgabe bei erkannter Sprache. Auflegen und erneut anrufen
+   prüft den Sitzungswechsel.
+
+Der Call-Worker akzeptiert einen Anruf erst, wenn Nextcloud einen aktiven
+Anruf für den erlaubten 1:1-Raum meldet und die Anruf-API genau eine aktive
+Sitzung des erlaubten Gegenübers ausweist. Das Add-on startet dafür einen
+Headless-Browser mit einer synthetischen Mikrofonspur. Der Audioempfang
+verarbeitet nur eingehende WebRTC-Spuren. Jeder Anruf hat eine eigene
+Hermes-Sitzung. Zwischen Anrufen wird Chromium beendet.
+
+Text und Voice Notes benötigen weder HPB noch TURN. Der Call-Pfad wurde
+mit Nextcloud 32.0.15 und Talk 22.0.20 geprüft. Im selben LAN kann WebRTC
+eine direkte Medienverbindung nutzen. Bei NAT, Mobilfunk, restriktiver
+Firewall oder fehlenden direkten ICE-Kandidaten muss ein passender
+[TURN-Dienst](https://nextcloud-talk.readthedocs.io/en/stable/TURN/) von
+beiden Endpunkten erreichbar sein. TURN über TCP funktionierte im
+isolierten Test. Wenn Talk einen High Performance Backend (HPB) verwendet,
+müssen beide Endpunkte auch den konfigurierten Signaling-WebSocket und den
+Medienpfad erreichen. Der isolierte Test verwendete Talk-Signaling ohne
+HPB. Für Konfigurationen mit Aufzeichnungszustimmung ist eine separate
+Prüfung nötig. Teste am iPhone zuerst über WLAN und dann über den
+vorgesehenen externen Zugang.

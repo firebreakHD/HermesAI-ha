@@ -122,13 +122,16 @@ class TalkClient:
             raise ServiceError("Talk: erforderliche Chat- oder Voice-Note-Funktionen fehlen.")
 
     async def rooms(self):
+        return list(await self.direct_messages())
+
+    async def direct_messages(self):
         rooms, _ = await self.ocs("GET", f"{TALK}/v4/room", params={"noStatusUpdate": 1})
-        return [
-            room["token"] for room in rooms
+        return {
+            room["token"]: room for room in rooms
             if room.get("type") == 1 and not room.get("remoteServer")
             and TOKEN.fullmatch(room.get("token", ""))
             and (not self.settings.allowed_rooms or room["token"] in self.settings.allowed_rooms)
-        ]
+        }
 
     async def peer(self, token):
         participants, _ = await self.ocs("GET", f"{TALK}/v4/room/{token}/participants")
@@ -139,6 +142,12 @@ class TalkClient:
         if self.settings.user in users and len(peers) == 1 and peers <= self.settings.allowed_users:
             return next(iter(peers))
         return None
+
+    async def call_participants(self, room):
+        data, _ = await self.ocs("GET", f"{TALK}/v4/call/{room}", component="Talk-Anruf")
+        if not isinstance(data, list):
+            raise ServiceError("Talk-Anruf: Teilnehmerliste fehlt.")
+        return data
 
     async def poll(self, room, cursor, *, timeout=25):
         data, headers = await self.ocs(

@@ -99,8 +99,8 @@ COPY talk/requirements.txt /opt/hermes-talk/requirements.txt
 RUN uv venv --python /usr/bin/python3 /opt/hermes-talk/venv && \
     uv pip install --python /opt/hermes-talk/venv/bin/python --only-binary :all: \
       --no-cache -r /opt/hermes-talk/requirements.txt && \
-    /opt/hermes-talk/venv/bin/python -c 'import aiohttp, faster_whisper, wyoming.audio'
-COPY talk/*.py /opt/hermes-talk/
+    /opt/hermes-talk/venv/bin/python -c 'import aiohttp, faster_whisper, playwright.async_api, webrtcvad, wyoming.audio'
+COPY talk/*.py talk/call_audio.js /opt/hermes-talk/
 
 COPY run.sh /run.sh
 COPY browser_bridge.py /browser_bridge.py

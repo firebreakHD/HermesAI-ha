@@ -54,8 +54,14 @@ class Whisper:
         async with self.lock:
             return await asyncio.to_thread(self.transcribe_local, path)
 
+    async def transcribe_pcm(self, pcm):
+        async with self.lock:
+            return await asyncio.to_thread(self._transcribe_pcm, pcm)
+
     def transcribe_local(self, path):
-        pcm = decode_voice(path)
+        return self._transcribe_pcm(decode_voice(path))
+
+    def _transcribe_pcm(self, pcm):
         try:
             import numpy as np
             from faster_whisper import WhisperModel

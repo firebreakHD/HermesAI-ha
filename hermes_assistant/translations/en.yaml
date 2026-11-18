@@ -65,3 +65,6 @@ configuration:
   talk_piper_endpoint:
     name: Wyoming Piper endpoint
     description: "Internal address tcp://host:port. Leave empty for text only."
+  talk_calls_enabled:
+    name: Nextcloud Talk calls
+    description: "Answers authorized private calls with local Whisper and Wyoming Piper. Off by default."

@@ -31,3 +31,8 @@ lokale STT-Konfiguration. Der
 [Talk-Notetaker](https://github.com/anentree/nextcloud-talk-notetaker/tree/46eabd4c17ed3ea15f8525b797e2cc26aad869a6)
 (AGPL-3.0) dient als Referenz für Browserbeitritt und Empfang von WebRTC-Audio.
 Keiner der beiden Adapter wird in das Image kopiert.
+
+Der optionale Call-Worker verwendet [Playwright](https://github.com/microsoft/playwright-python)
+(Apache-2.0), das Debian-Paket Chromium und
+[webrtcvad-wheels](https://github.com/daanzu/py-webrtcvad-wheels) (MIT,
+mit BSD-lizenziertem WebRTC-VAD-Code).

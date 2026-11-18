@@ -4,7 +4,8 @@
 
 - Add opt-in Nextcloud Talk private chats using an app password, a sender allowlist and an optional conversation allowlist.
 - Answer text and native voice notes in one Hermes DM session. Voice uses local faster-whisper and an existing Wyoming Piper service.
-- Run the Talk worker inside the existing add-on without an incoming port. Live calls are not available in this release.
+- Add separately enabled Talk calls with a supervised Chromium worker, local voice activity detection, separate call sessions and speech interruption. The worker uses the dedicated account and starts Chromium only for an authorized call.
+- Run Nextcloud Talk inside the existing add-on without an incoming port. Both Talk options are off by default.
 
 ## 2.0.10 — 2026-10-16 (staged)
 

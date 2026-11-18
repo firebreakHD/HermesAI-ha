@@ -65,3 +65,6 @@ configuration:
   talk_piper_endpoint:
     name: Wyoming-Piper-Endpunkt
     description: "Interne Adresse tcp://host:port. Leer aktiviert ausschließlich Text."
+  talk_calls_enabled:
+    name: Nextcloud-Talk-Anrufe
+    description: "Nimmt erlaubte private Anrufe mit lokalem Whisper und Wyoming Piper an. Standardmäßig aus."

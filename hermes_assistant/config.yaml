@@ -65,6 +65,7 @@ options:
   homeassistant_token: ""
   watch_entities: []
   talk_enabled: false
+  talk_calls_enabled: false
   talk_url: ""
   talk_username: ""
   talk_app_password: ""
@@ -90,6 +91,7 @@ schema:
   watch_entities:
     - str?
   talk_enabled: bool
+  talk_calls_enabled: bool
   talk_url: str?
   talk_username: str?
   talk_app_password: password?
