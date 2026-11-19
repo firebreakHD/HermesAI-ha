@@ -237,9 +237,9 @@ dessen Modellanmeldung, etwa den vorhandenen Codex-Login. Die Bridge setzt bei
 jedem Text-, Sprachnachrichten- und Anrufturn die passende Persona und Deutsch
 als Antwortsprache. Sie trennt die Verläufe mit authentifizierten
 `X-Hermes-Session-Id`-Sitzungen pro Kontakt und DM sowie einer frischen Sitzung
-pro Anruf. Der gepinnte Agent routet benannte Profile mit jeweils eigener
-API-Authentifizierung und eigenem Profilkontext. Die Talk-Bridge nutzt deshalb
-die bestehenden Gateway-Zugangsdaten und API-Sitzungen. Talk verbindet sich
+pro Anruf. Benannte Hermes-Profile haben im gepinnten Build eigene API-Schlüssel
+und eigene Codex-Anmeldedaten. Die API-Sitzungen erlauben beiden Kontakten,
+die bestehende Gateway- und Modellanmeldung zu verwenden. Talk verbindet sich
 ausgehend per HTTPS. Der Host-Port `8642/tcp` kann für diese Integration leer bleiben.
 
 Whisper verwendet für Sprachnachrichten und Anrufe lokal `de`. Beim ersten

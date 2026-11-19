@@ -233,8 +233,8 @@ class CallWorker:
                 first_run = page.locator("#firstrunwizard").get_by_role(
                     "button", name=re.compile(r"^(Close|Schließen)", re.I),
                 ).first
-                if await first_run.is_visible():
-                    await first_run.click(timeout=2000)
+                # Nextcloud can mount the welcome dialog after the call button appears.
+                await page.add_locator_handler(first_run, lambda button: button.click(timeout=3000))
                 await page.get_by_role("button", name=JOIN).first.click(timeout=12000)
                 dialog = page.get_by_role("dialog").filter(has=page.get_by_role("button", name=JOIN))
                 join_button = dialog.get_by_role("button", name=JOIN).first

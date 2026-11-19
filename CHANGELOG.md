@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.13 — 2026-11-18
+## 2.0.13 — 2026-11-19
 
 - Keep the existing Nextcloud Talk account and DM history as JARVIS. Add opt-in FRIDAY with separate Talk credentials, DM delivery state and Hermes sessions.
 - Use German persona instructions for texts, voice notes and calls, German local Whisper, and independent German Wyoming Piper voice selections.

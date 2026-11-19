@@ -64,9 +64,13 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(friday.allowed_users, {"Marcel"})
         self.assertEqual(friday.allowed_rooms, set())
         restricted = Settings.load({**options, "talk_friday_allowed_users": ["SomeoneElse"],
-                                    "talk_friday_allowed_rooms": ["otherdm"]}, persona="FRIDAY")
+                                    "talk_friday_allowed_rooms": ["otherdm"],
+                                    "talk_friday_piper_voice": "de_DE-kerstin-medium"}, persona="FRIDAY")
         self.assertEqual(restricted.allowed_users, {"SomeoneElse"})
         self.assertEqual(restricted.allowed_rooms, {"otherdm"})
+        self.assertEqual(restricted.voice, "de_DE-kerstin-medium")
+        jarvis = Settings.load({**options, "talk_piper_voice": "de_DE-thorsten-high"})
+        self.assertEqual(jarvis.voice, "de_DE-thorsten-high")
         with self.assertRaisesRegex(ServiceError, "eigene Nextcloud-Konto-ID"):
             Settings.load({**options, "talk_friday_username": "hermes"}, persona="FRIDAY")
 
