@@ -30,6 +30,10 @@ class DeliveryTests(unittest.TestCase):
         second = self.run_patch()
         self.assertEqual(second.returncode, 0, second.stderr)
 
+    def test_different_git_abbreviation_does_not_invalidate_identical_patch(self):
+        subprocess.run(['git', '-C', str(self.target), 'config', 'core.abbrev', '8'], check=True)
+        self.assertEqual(self.run_patch().returncode, 0)
+
     def test_installed_dirty_b1_is_idempotent(self):
         first = self.run_patch()
         self.assertEqual(first.returncode, 0, first.stderr)

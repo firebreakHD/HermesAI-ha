@@ -2,6 +2,7 @@
 """B1-Auslieferung: nie unpatchte WebUI starten; keine Änderungen an fremden Diffs."""
 import argparse
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -22,18 +23,23 @@ def state(path):
     status = git(path, 'status', '--porcelain', '--untracked-files=all')
     if diff.returncode or status.returncode:
         raise RuntimeError('Git-Status nicht lesbar')
+    def without_abbrev(text):
+        # Git's index hash abbreviations vary by version/config; hunks must match.
+        return re.sub(r'^index [0-9a-f]+\.\.[0-9a-f]+(?=\s|$)',
+                      'index <hashes>', text, flags=re.MULTILINE)
     expected = PATCH.read_text()
+    same_patch = without_abbrev(diff.stdout) == without_abbrev(expected)
     changed = {line[3:] for line in status.stdout.splitlines()}
     permitted = {'api/auth.py', 'server.py', *FILES}
     if changed - permitted:
         raise RuntimeError('Fremde lokale Änderungen: Update und B1-Auslieferung blockiert')
-    if diff.stdout and diff.stdout != expected:
+    if diff.stdout and not same_patch:
         raise RuntimeError('Abweichender/teilweiser B1-Diff: keine Änderung')
     for name in FILES:
         dest = path / name
         if dest.exists() and dest.read_bytes() != (HERE / 'files' / name).read_bytes():
             raise RuntimeError(f'Abweichende B1-Datei: {name}')
-    if changed and (diff.stdout != expected or any(not (path / name).exists() for name in FILES)):
+    if changed and (not same_patch or any(not (path / name).exists() for name in FILES)):
         raise RuntimeError('Unvollständige B1-Änderung: keine Änderung')
     return bool(changed)
 
