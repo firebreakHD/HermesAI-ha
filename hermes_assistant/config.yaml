@@ -72,6 +72,13 @@ options:
   talk_allowed_users: []
   talk_allowed_rooms: []
   talk_piper_endpoint: ""
+  talk_piper_voice: de_DE-thorsten-medium
+  talk_friday_enabled: false
+  talk_friday_username: ""
+  talk_friday_app_password: ""
+  talk_friday_allowed_users: []
+  talk_friday_allowed_rooms: []
+  talk_friday_piper_voice: de_DE-eva_k-x_low
 
 schema:
   timezone: str
@@ -100,3 +107,12 @@ schema:
   talk_allowed_rooms:
     - str
   talk_piper_endpoint: str?
+  talk_piper_voice: str?
+  talk_friday_enabled: bool
+  talk_friday_username: str?
+  talk_friday_app_password: password?
+  talk_friday_allowed_users:
+    - str
+  talk_friday_allowed_rooms:
+    - str
+  talk_friday_piper_voice: str?

@@ -45,26 +45,47 @@ configuration:
     name: Beobachtete Entities
     description: Liste von Home-Assistant-Entity-IDs für Hermes.
   talk_enabled:
-    name: Nextcloud Talk
-    description: "Verbindet Hermes mit erlaubten privaten DMs. Standardmäßig aus."
+    name: JARVIS in Nextcloud Talk
+    description: Aktiviert JARVIS für erlaubte lokale 1:1-Unterhaltungen.
   talk_url:
-    name: Nextcloud-URL
-    description: "HTTPS-Basisadresse der Nextcloud, bei Bedarf mit Installationspfad."
+    name: Nextcloud-URL für beide Kontakte
+    description: HTTPS-Basisadresse der Nextcloud, bei Bedarf mit Installationspfad.
   talk_username:
-    name: Nextcloud-Konto-ID
-    description: "Anmelde-ID des dedizierten Hermes-Kontos."
+    name: JARVIS Nextcloud-Konto-ID
+    description: Bestehende Anmelde-ID, inklusive Groß- und Kleinschreibung.
   talk_app_password:
-    name: Nextcloud-App-Passwort
-    description: "Eigenes App-Passwort des Hermes-Kontos mit Dateizugriff."
+    name: JARVIS App-Passwort
+    description: App-Passwort des bestehenden Nextcloud-Kontos mit Dateizugriff.
   talk_allowed_users:
-    name: Erlaubte Nextcloud-Benutzer
-    description: "Anmelde-IDs der Benutzer, deren private DMs Hermes beantworten darf."
+    name: Erlaubte Benutzer für JARVIS
+    description: Exakte Nextcloud-Konto-IDs der erlaubten Absender.
   talk_allowed_rooms:
-    name: Erlaubte Talk-Räume
-    description: "Optionale Raumtokens. Leer erlaubt alle privaten DMs mit erlaubten Benutzern."
+    name: Erlaubte Talk-Räume für JARVIS
+    description: Optionale Raumtokens. Leer erlaubt alle lokalen 1:1-Räume mit erlaubten Benutzern.
   talk_piper_endpoint:
-    name: Wyoming-Piper-Endpunkt
-    description: "Interne Adresse tcp://host:port. Leer aktiviert ausschließlich Text."
+    name: Wyoming-Piper-Endpunkt für beide Kontakte
+    description: Interne Adresse tcp://host:port. Leer aktiviert Textbetrieb.
   talk_calls_enabled:
-    name: Nextcloud-Talk-Anrufe
-    description: "Nimmt erlaubte private Anrufe mit lokalem Whisper und Wyoming Piper an. Standardmäßig aus."
+    name: Live-Anrufe für JARVIS und FRIDAY
+    description: Nimmt bei aktivierten Kontakten erlaubte Anrufe mit lokalem Whisper und Wyoming Piper an.
+  talk_piper_voice:
+    name: Deutsche Piper-Stimme für JARVIS
+    description: Exakter Stimmname des Wyoming-Dienstes, zum Beispiel de_DE-thorsten-medium.
+  talk_friday_enabled:
+    name: FRIDAY in Nextcloud Talk
+    description: Aktiviert FRIDAY als eigenen Kontakt. Standardmäßig aus.
+  talk_friday_username:
+    name: FRIDAY Nextcloud-Konto-ID
+    description: Eigene Konto-ID auf derselben Nextcloud-Instanz.
+  talk_friday_app_password:
+    name: FRIDAY App-Passwort
+    description: Eigenes App-Passwort des FRIDAY-Kontos mit Dateizugriff.
+  talk_friday_allowed_users:
+    name: Erlaubte Benutzer für FRIDAY
+    description: Exakte Konto-IDs. Eine leere Liste übernimmt die Benutzerliste von JARVIS.
+  talk_friday_allowed_rooms:
+    name: Erlaubte Talk-Räume für FRIDAY
+    description: Optionale FRIDAY-Raumtokens. Leer erlaubt alle lokalen 1:1-Räume mit erlaubten Benutzern.
+  talk_friday_piper_voice:
+    name: Deutsche Piper-Stimme für FRIDAY
+    description: Exakter Stimmname des Wyoming-Dienstes, zum Beispiel de_DE-eva_k-x_low.

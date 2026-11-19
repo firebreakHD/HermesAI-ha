@@ -3,11 +3,13 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "talk"))
 
 from call_worker import CallWorker, Dialogue, FRAME_BYTES, VoiceActivity, remote_session
+from test_talk import OPTIONS, FRIDAY
+from talk_client import Settings
 
 
 def attendee(user, session=None, kind="users"):
@@ -16,34 +18,50 @@ def attendee(user, session=None, kind="users"):
 
 class CallAuthorizationTests(unittest.IsolatedAsyncioTestCase):
     def test_only_one_authorized_remote_session(self):
-        peer = attendee("alice")
+        peer = attendee("Marcel")
         own = attendee("hermes")
         for participants in ([own], [peer, own], [peer, attendee("other")],
-                             [peer, attendee("alice", "second-tab")], [attendee("alice", kind="guests")]):
-            self.assertIsNone(remote_session(participants, "alice", "hermes"))
-        self.assertEqual(remote_session([peer], "alice", "hermes"), "alice-session")
-        self.assertEqual(remote_session([peer, own], "alice", "hermes", joined=True), "alice-session")
-        self.assertIsNone(remote_session([own], "alice", "hermes", joined=True))
+                             [peer, attendee("Marcel", "second-tab")], [attendee("Marcel", kind="guests")]):
+            self.assertIsNone(remote_session(participants, "Marcel", "hermes"))
+        self.assertEqual(remote_session([peer], "Marcel", "hermes"), "Marcel-session")
+        self.assertEqual(remote_session([peer, own], "Marcel", "hermes", joined=True), "Marcel-session")
+        self.assertIsNone(remote_session([own], "Marcel", "hermes", joined=True))
         self.assertIsNone(remote_session([peer, own, attendee("hermes", "second")],
-                                         "alice", "hermes", joined=True))
+                                         "Marcel", "hermes", joined=True))
 
     async def test_has_call_requires_authorized_peer_and_active_session(self):
         talk = AsyncMock()
         talk.direct_messages.return_value = {"abcd": {"hasCall": True, "callStartTime": 42}}
         talk.peer.return_value = None
         worker = CallWorker(SimpleNamespace(user="hermes"), talk, None, None)
-        self.assertIsNone(await worker.current("abcd", "alice"))
+        self.assertIsNone(await worker.current("abcd", "Marcel"))
         talk.call_participants.assert_not_awaited()
-        talk.peer.return_value = "alice"
+        talk.peer.return_value = "Marcel"
         talk.call_participants.return_value = [attendee("bob")]
-        self.assertIsNone(await worker.current("abcd", "alice"))
-        talk.call_participants.return_value = [attendee("alice")]
-        self.assertEqual(await worker.current("abcd", "alice"), (42, "alice-session"))
+        self.assertIsNone(await worker.current("abcd", "Marcel"))
+        talk.call_participants.return_value = [attendee("Marcel")]
+        self.assertEqual(await worker.current("abcd", "Marcel"), (42, "Marcel-session"))
         talk.direct_messages.return_value = {"abcd": {"hasCall": False}}
-        self.assertIsNone(await worker.current("abcd", "alice"))
+        self.assertIsNone(await worker.current("abcd", "Marcel"))
 
 
 class CallAudioTests(unittest.IsolatedAsyncioTestCase):
+    async def test_call_audio_uses_each_contacts_voice_and_a_fresh_session(self):
+        sessions = set()
+        for persona in ("JARVIS", "FRIDAY", "JARVIS"):
+            settings = Settings.load({**OPTIONS, **FRIDAY}, persona=persona)
+            page, hermes, whisper = AsyncMock(), AsyncMock(), AsyncMock()
+            whisper.transcribe_pcm.return_value = "Good morning!"
+            hermes.answer.return_value = "Guten Morgen!"
+            call = Dialogue(page, hermes, whisper, settings)
+            with patch("call_worker.piper_audio", new=AsyncMock(return_value=b"mp3")) as piper:
+                await call.answer(0, b"pcm")
+            piper.assert_awaited_once_with(settings.piper, "Guten Morgen!", settings.voice)
+            self.assertEqual(hermes.answer.await_args.args[2:], ("Good morning!", True))
+            self.assertNotIn(call.session, sessions)
+            sessions.add(call.session)
+            page.evaluate.assert_awaited_once_with("audio => window.hermesMedia.play(audio)", "bXAz")
+
     def test_vad_threshold_and_end_of_speech(self):
         voice = b"v" * FRAME_BYTES
         silence = bytes(FRAME_BYTES)
@@ -69,7 +87,7 @@ class CallAudioTests(unittest.IsolatedAsyncioTestCase):
         hermes.answer.side_effect = answer
         whisper = AsyncMock()
         whisper.transcribe_pcm.return_value = "first turn"
-        dialogue = Dialogue(page, hermes, whisper, ("piper", 10200))
+        dialogue = Dialogue(page, hermes, whisper, Settings.load(OPTIONS))
         await dialogue.event("start", None)
         await dialogue.event("end", b"pcm")
         await asyncio.wait_for(listen.wait(), 1)

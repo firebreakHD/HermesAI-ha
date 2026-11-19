@@ -206,24 +206,30 @@ fi
 start_talk_worker() (
     set +e
     while true; do
-        /opt/hermes-talk/venv/bin/python "/opt/hermes-talk/$1"
+        /opt/hermes-talk/venv/bin/python "/opt/hermes-talk/$1" "$2"
         rc=$?
         if [ "${rc}" -eq 0 ] || [ "${rc}" -eq 2 ]; then
             break
         fi
-        bashio::log.warning 'Nextcloud Talk worker exited; restarting in 5 seconds'
+        bashio::log.warning "Nextcloud Talk $2 worker exited, restarting in 5 seconds"
         sleep 5
     done
 )
 
-if [ "$(jq -r '.talk_enabled // false' /data/options.json)" = true ]; then
-    bashio::log.info 'Starting the Nextcloud Talk worker'
-    start_talk_worker talk_worker.py &
-    if [ "$(jq -r '.talk_calls_enabled // false' /data/options.json)" = true ]; then
-        bashio::log.info 'Starting the Nextcloud Talk Call worker'
-        start_talk_worker call_worker.py &
+for persona in JARVIS FRIDAY; do
+    talk_prefix=talk_
+    if [ "$persona" = FRIDAY ]; then
+        talk_prefix=talk_friday_
     fi
-fi
+    if [ "$(jq -r --arg key "${talk_prefix}enabled" '.[$key] // false' /data/options.json)" = true ]; then
+        bashio::log.info "Starting the Nextcloud Talk worker for $persona"
+        start_talk_worker talk_worker.py "$persona" &
+        if [ "$(jq -r '.talk_calls_enabled // false' /data/options.json)" = true ]; then
+            bashio::log.info "Starting the Nextcloud Talk call worker for $persona"
+            start_talk_worker call_worker.py "$persona" &
+        fi
+    fi
+done
 
 AGENT_PYTHON=$(python3 - "${AGENT_DIR}" <<'PY'
 import sys

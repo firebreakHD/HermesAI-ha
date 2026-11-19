@@ -13,6 +13,13 @@ TALK = "/ocs/v2.php/apps/spreed/api"
 SHARES = "/ocs/v2.php/apps/files_sharing/api/v1/shares"
 TOKEN = re.compile(r"[a-z0-9]{4,30}")
 MAX_VOICE_BYTES = 20 * 1024 * 1024
+PIPER_VOICES = {"JARVIS": "de_DE-thorsten-medium", "FRIDAY": "de_DE-eva_k-x_low"}
+VOICE_SHARE_HINT = (
+    "Talk-Sprachfreigabe: Die Chat-API liefert keinen lesbaren Dateianhang. "
+    "Falls die Aufnahme im Browser abspielbar ist, prüfe den Dateizugriff des App-Passworts "
+    "und ob dieselbe Freigabe unter Dateien für dieses Talk-Konto sichtbar ist. "
+    "Sende die Aufnahme danach erneut als native Sprachnachricht."
+)
 
 
 class ServiceError(Exception):
@@ -32,10 +39,15 @@ class Settings:
     allowed_rooms: frozenset
     api_key: str = field(repr=False)
     piper: tuple[str, int] | None = None
+    persona: str = "JARVIS"
+    voice: str = PIPER_VOICES["JARVIS"]
+    calls: bool = False
 
     @classmethod
-    def load(cls, options, *, allow_http=False):
-        if options.get("talk_enabled") is not True:
+    def load(cls, options, *, persona="JARVIS", allow_http=False):
+        friday = persona == "FRIDAY"
+        prefix = "talk_friday_" if friday else "talk_"
+        if options.get(prefix + "enabled") is not True:
             return None
         try:
             url = urlsplit(options.get("talk_url", "").strip())
@@ -47,14 +59,18 @@ class Settings:
         except (AttributeError, TypeError, ValueError):
             raise ServiceError("Talk-Konfiguration: eine HTTPS-URL ohne Zugangsdaten eingeben.") from None
 
-        user = options.get("talk_username") or ""
-        password = options.get("talk_app_password") or ""
+        user = options.get(prefix + "username") or ""
+        password = options.get(prefix + "app_password") or ""
         if (not user.strip() or user != user.strip() or ":" in user or "/" in user
                 or "\\" in user or user in {".", ".."} or not password.strip()
                 or any(ord(char) < 32 or ord(char) == 127 for char in user + password)):
             raise ServiceError("Talk-Anmeldung: Konto-ID und App-Passwort eingeben.")
-        users = frozenset(s.strip() for s in options.get("talk_allowed_users", []) if s.strip())
-        rooms = frozenset(s.strip() for s in options.get("talk_allowed_rooms", []) if s.strip())
+        if friday and user == options.get("talk_username"):
+            raise ServiceError("FRIDAY benötigt eine eigene Nextcloud-Konto-ID.")
+        users = frozenset(s.strip() for s in options.get(prefix + "allowed_users", []) if s.strip())
+        if friday and not users:
+            users = frozenset(s.strip() for s in options.get("talk_allowed_users", []) if s.strip())
+        rooms = frozenset(s.strip() for s in options.get(prefix + "allowed_rooms", []) if s.strip())
         if not users or user in users or any(not TOKEN.fullmatch(token) for token in rooms):
             raise ServiceError("Talk-Konfiguration: erlaubte Konto-IDs und ggf. gültige Raumtokens eingeben.")
 
@@ -73,11 +89,18 @@ class Settings:
                 piper = (parsed.hostname, parsed.port)
             except ValueError:
                 raise ServiceError("Piper-Konfiguration: Wyoming-Endpunkt als tcp://host:port eingeben.") from None
-        return cls(url.geturl().rstrip("/"), user, password, users, rooms, api_key, piper)
+        voice = (options.get(prefix + "piper_voice") or PIPER_VOICES[persona]).strip()
+        if not re.fullmatch(r"[a-zA-Z0-9_.-]{1,100}", voice):
+            raise ServiceError("Piper-Konfiguration: einen gültigen Wyoming-Stimmnamen eingeben.")
+        return cls(url.geturl().rstrip("/"), user, password, users, rooms, api_key, piper, persona, voice,
+                   options.get("talk_calls_enabled") is True)
 
     @property
     def scope(self):
-        return hashlib.sha256(f"{self.url}\0{self.user}".encode()).hexdigest()
+        account = f"{self.url}\0{self.user}"
+        if self.persona == "FRIDAY":
+            account = "FRIDAY\0" + account
+        return hashlib.sha256(account.encode()).hexdigest()
 
 
 class TalkClient:
@@ -116,10 +139,10 @@ class TalkClient:
         data, _ = await self.ocs("GET", "/ocs/v2.php/cloud/capabilities")
         features = data.get("capabilities", {}).get("spreed", {}).get("features", [])
         required = {"chat-v2", "chat-reference-id"}
-        if self.settings.piper:
-            required.add("voice-message-sharing")
         if not required.issubset(features):
-            raise ServiceError("Talk: erforderliche Chat- oder Voice-Note-Funktionen fehlen.")
+            raise ServiceError("Talk: erforderliche Chat-Funktionen fehlen.")
+        if self.settings.piper and "voice-message-sharing" not in features:
+            raise ServiceError("Talk: Die Nextcloud-Instanz unterstützt keine nativen Voice Notes.")
 
     async def rooms(self):
         return list(await self.direct_messages())
@@ -175,7 +198,7 @@ class TalkClient:
                 self.dav_url(path), headers={"Authorization": self.authorization}, allow_redirects=False,
             ) as response:
                 if response.status in {403, 404}:
-                    raise InvalidVoice("Die für Hermes freigegebene Audiodatei ist nicht lesbar.")
+                    raise InvalidVoice(VOICE_SHARE_HINT)
                 if response.status != 200:
                     raise ServiceError(f"Talk-WebDAV: HTTP {response.status} beim Download.")
                 if response.content_length is not None and response.content_length > MAX_VOICE_BYTES:
@@ -240,7 +263,7 @@ def voice_path(message):
     files = [p for p in parameters.values() if isinstance(p, dict) and p.get("type") == "file"] \
         if isinstance(parameters, dict) else []
     if len(files) != 1:
-        raise InvalidVoice("Die Sprachnachricht enthält keine eindeutige Dateifreigabe.")
+        raise InvalidVoice(VOICE_SHARE_HINT)
     attachment = files[0]
     try:
         permissions = int(attachment["permissions"])
@@ -251,7 +274,7 @@ def voice_path(message):
                 or any(part in {"", ".", ".."} for part in path.removeprefix("/").split("/"))):
             raise ValueError
     except (KeyError, TypeError, ValueError):
-        raise InvalidVoice("Die Sprachnachricht hat keine lesbare WebDAV-Freigabe.") from None
+        raise InvalidVoice(VOICE_SHARE_HINT) from None
     if size < 1 or size > MAX_VOICE_BYTES:
         raise InvalidVoice("Die Sprachnachricht ist leer oder größer als 20 MB.")
     return path
