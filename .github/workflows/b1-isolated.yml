@@ -18,11 +18,12 @@ jobs:
         run: |
           set -euo pipefail
           bash -n hermes_assistant/run.sh
-          git clone --filter=blob:none https://github.com/nesquena/hermes-webui.git /data/hermes/webui-app
-          git -C /data/hermes/webui-app checkout --detach 6ea12c1548d54095b1fe6f63f799bca61708ef44
-          python3 hermes_assistant/b1/apply.py /data/hermes/webui-app --no-update
-          python3 -m unittest discover -s hermes_assistant/tests -p test_b1_delivery.py -v
-          (cd /data/hermes/webui-app && python3 -m unittest discover -s tests -p test_ha_person_assignment.py -v)
+          source="$RUNNER_TEMP/webui-app"
+          git clone --filter=blob:none https://github.com/nesquena/hermes-webui.git "$source"
+          git -C "$source" checkout --detach 6ea12c1548d54095b1fe6f63f799bca61708ef44
+          python3 hermes_assistant/b1/apply.py "$source" --no-update
+          B1_TEST_WEBUI_SOURCE="$source" python3 -m unittest discover -s hermes_assistant/tests -p test_b1_delivery.py -v
+          (cd "$source" && python3 -m unittest discover -s tests -p test_ha_person_assignment.py -v)
       - name: Build add-on image without publishing
         run: |
           docker build --pull -t trc-ai-b1:ci hermes_assistant

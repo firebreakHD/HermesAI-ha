@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / 'b1' / 'apply.py'
-SOURCE = Path('/data/hermes/webui-app')
+SOURCE = Path(os.environ.get('B1_TEST_WEBUI_SOURCE', '/data/hermes/webui-app'))
 
 
 class DeliveryTests(unittest.TestCase):
