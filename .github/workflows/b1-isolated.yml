@@ -19,8 +19,9 @@ jobs:
           set -euo pipefail
           bash -n hermes_assistant/run.sh
           source="$RUNNER_TEMP/webui-app"
-          git clone --filter=blob:none https://github.com/nesquena/hermes-webui.git "$source"
-          git -C "$source" checkout --detach 6ea12c1548d54095b1fe6f63f799bca61708ef44
+          git clone --depth=1 --no-checkout https://github.com/nesquena/hermes-webui.git "$source"
+          git -C "$source" fetch --depth=1 origin 6ea12c1548d54095b1fe6f63f799bca61708ef44
+          git -C "$source" checkout --detach FETCH_HEAD
           python3 hermes_assistant/b1/apply.py "$source" --no-update
           B1_TEST_WEBUI_SOURCE="$source" python3 -m unittest discover -s hermes_assistant/tests -p test_b1_delivery.py -v
           (cd "$source" && python3 -m unittest discover -s tests -p test_ha_person_assignment.py -v)

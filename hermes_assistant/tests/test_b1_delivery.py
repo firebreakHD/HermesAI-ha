@@ -73,7 +73,7 @@ class DeliveryTests(unittest.TestCase):
         subprocess.run(['git', '-C', str(self.target), 'remote', 'set-url', 'origin', str(upstream)], check=True)
         before = (self.target / 'server.py').read_bytes()
         result = self.run_patch(update=True)
-        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual((self.target / 'server.py').read_bytes(), before)
         self.assertFalse(self.target.with_name('webui-app.b1-previous').exists())
 
