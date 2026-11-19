@@ -1,4 +1,4 @@
-"""Run one supervised Talk bridge alongside the existing Hermes gateway."""
+"""Run one supervised Talk contact alongside the existing Hermes gateway."""
 
 import asyncio
 import hashlib
@@ -14,13 +14,18 @@ from pathlib import Path
 
 import aiohttp
 
-from talk_audio import Whisper, piper_audio
-from talk_client import InvalidVoice, ServiceError, Settings, TalkClient
+from talk_audio import PiperError, Whisper, piper_audio
+from talk_client import InvalidVoice, ServiceError, Settings, TalkClient, VOICE_SHARE_HINT
 
 LOG = logging.getLogger("hermes-talk")
 HERMES_URL = "http://127.0.0.1:8642"
 DISCOVERY_SECONDS = 5
 MAX_REPLY = 8000
+PERSONAS = {
+    "JARVIS": "Du bist JARVIS, ein ruhiger, präziser und diskreter persönlicher Assistent.",
+    "FRIDAY": "Du bist FRIDAY, eine direkte, freundliche und pragmatische persönliche Assistentin.",
+}
+GERMAN = "Antworte immer in natürlichem Deutsch, gerne österreichisch formuliert, auch bei englischer Eingabe."
 
 
 class State:
@@ -63,8 +68,22 @@ def message_kind(message, room, peer, since):
     kind = message.get("messageType")
     if kind == "voice-message":
         return "voice"
-    if (kind == "comment" and not message.get("systemMessage")
-            and isinstance(message.get("message"), str) and message["message"].strip()):
+    body = message.get("message")
+    if message.get("systemMessage") == "file_shared" or (
+        kind == "comment" and isinstance(body, str) and (
+            body.strip() == "{file}" or body.lstrip().startswith((
+                "*{actor} shared a file which is no longer available*",
+                "*{actor} hat eine Datei geteilt, die nicht mehr vorhanden ist*",
+            ))
+        )
+    ):
+        return "file"
+    if kind == "comment" and not message.get("systemMessage") and isinstance(body, str) and body.strip():
+        parameters = message.get("messageParameters")
+        if isinstance(parameters, dict) and any(
+            isinstance(value, dict) and value.get("type") == "file" for value in parameters.values()
+        ):
+            return "file"
         return "text"
     return None
 
@@ -74,19 +93,19 @@ def identifier(*parts):
 
 
 class Hermes:
-    def __init__(self, http, api_key):
+    def __init__(self, http, settings):
         self.http = http
-        self.api_key = api_key
+        self.settings = settings
 
     async def answer(self, session, turn, prompt, voice):
-        messages = [{"role": "user", "content": prompt}]
+        instructions = f"{PERSONAS[self.settings.persona]} {GERMAN}"
         if voice:
-            messages.insert(0, {"role": "system", "content":
-                                "Reply concisely in the user's language. The answer will be read aloud."})
+            instructions += " Antworte kurz und in gut vorlesbaren Sätzen."
+        messages = [{"role": "system", "content": instructions}, {"role": "user", "content": prompt}]
         try:
             async with self.http.post(
                 HERMES_URL + "/v1/chat/completions", json={"messages": messages},
-                headers={"Authorization": f"Bearer {self.api_key}", "X-Hermes-Session-Id": session,
+                headers={"Authorization": f"Bearer {self.settings.api_key}", "X-Hermes-Session-Id": session,
                          "Idempotency-Key": turn},
                 timeout=aiohttp.ClientTimeout(total=300), allow_redirects=False,
             ) as response:
@@ -128,6 +147,8 @@ class Bridge:
         if answer is None:
             voice = kind == "voice"
             try:
+                if kind == "file":
+                    raise InvalidVoice(VOICE_SHARE_HINT)
                 if voice:
                     if not self.settings.piper:
                         raise InvalidVoice("Sprachnachrichten benötigen einen konfigurierten Wyoming-Piper-Dienst.")
@@ -145,13 +166,18 @@ class Bridge:
                 )
             except InvalidVoice as error:
                 answer, voice = str(error), False
+                LOG.warning("%s", error)
             self.state.draft(room, msg_id, answer, voice)
 
         if voice and audio is None:
-            if not self.settings.piper:
-                await self.deliver(room, msg_id, answer, False, None)
-                return
-            audio = await piper_audio(self.settings.piper, answer)
+            try:
+                if not self.settings.piper:
+                    raise PiperError("Piper-Konfiguration: Wyoming-Endpunkt fehlt.")
+                audio = await piper_audio(self.settings.piper, answer, self.settings.voice)
+            except PiperError as error:
+                LOG.warning("%s", error)
+                answer = f"Sprachausgabe fehlgeschlagen. Hier ist die Antwort als Text:\n\n{answer}"
+                voice = False
             self.state.draft(room, msg_id, answer, voice, audio)
         await self.deliver(room, msg_id, answer, voice, audio)
 
@@ -217,15 +243,16 @@ class Bridge:
             await asyncio.gather(*workers.values(), return_exceptions=True)
 
 
-async def main():
+async def main(persona):
     config_file = Path("/data/options.json")
     root = Path("/data/hermes/talk")
     try:
-        settings = Settings.load(json.loads(config_file.read_text()))
+        settings = Settings.load(json.loads(config_file.read_text()), persona=persona)
         if settings is None:
             return 0
         root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        state = State(root / "delivery.sqlite3", settings.scope)
+        database = "delivery.sqlite3" if persona == "JARVIS" else "delivery-friday.sqlite3"
+        state = State(root / database, settings.scope)
     except (OSError, ValueError, TypeError, sqlite3.Error):
         LOG.error("Talk: Konfiguration oder lokaler Nachrichtenspeicher konnte nicht geöffnet werden.")
         return 2
@@ -237,7 +264,7 @@ async def main():
     async with aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=45), cookie_jar=aiohttp.DummyCookieJar(),
     ) as http:
-        bridge = Bridge(settings, state, TalkClient(http, settings), Hermes(http, settings.api_key),
+        bridge = Bridge(settings, state, TalkClient(http, settings), Hermes(http, settings),
                         Whisper(root / "models"))
         while True:
             try:
@@ -250,14 +277,15 @@ async def main():
 
 if __name__ == "__main__":
     os.umask(0o077)
-    logging.basicConfig(level=logging.INFO, format="[Nextcloud Talk] %(message)s")
+    persona = "FRIDAY" if sys.argv[1:] == ["FRIDAY"] else "JARVIS"
+    logging.basicConfig(level=logging.INFO, format=f"[Nextcloud Talk {persona}] %(message)s")
     # Keep request URLs, server responses, model text and audio out of worker logs.
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpx2").setLevel(logging.WARNING)
     logging.getLogger("faster_whisper").setLevel(logging.WARNING)
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     try:
-        sys.exit(asyncio.run(main()))
+        sys.exit(asyncio.run(main(persona)))
     except Exception:
         LOG.error("Talk: Worker unerwartet beendet. Konfiguration und Add-on-Version prüfen.")
         sys.exit(1)

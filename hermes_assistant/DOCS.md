@@ -197,83 +197,96 @@ Installation.
 
 ## Nextcloud Talk
 
-Die Integration verwendet das bestehende Hermes-Gateway auf Port `8642`
-und das dort konfigurierte Modell, etwa den vorhandenen Codex-Login.
-Talk verbindet sich ausgehend per HTTPS. Der Host-Port `8642/tcp` kann in
-Home Assistant leer bleiben, wenn keine anderen Geräte die Hermes-API nutzen.
-Es sind weder ein Webhook noch zusätzliche Installationsschritte nötig.
+JARVIS übernimmt beim Update das vorhandene Talk-Konto mit seinen
+`talk_*`-Einstellungen, DM-Sitzungen und gespeicherten Nachrichten-Cursorn.
+In Nextcloud kannst du den **Anzeigenamen** dieses Kontos auf JARVIS ändern.
+Die Konto-ID, etwa `hermes`, bleibt gleich. FRIDAY ist optional und verwendet
+ein eigenes lokales Konto auf derselben Nextcloud.
 
-1. Ein dediziertes lokales Nextcloud-Konto für Hermes anlegen. Unter **Persönliche
-   Einstellungen → Sicherheit → Geräte & Sitzungen** ein App-Passwort mit
-   Dateizugriff für das Add-on erzeugen. Die Konto-ID kann vom Anzeigenamen abweichen.
+1. Für eine Neuinstallation ein lokales Konto für JARVIS anlegen. Für FRIDAY
+   bei Bedarf ein zweites Konto anlegen. Unter **Persönliche Einstellungen →
+   Sicherheit → Geräte & Sitzungen** pro Konto ein App-Passwort mit Dateizugriff
+   erzeugen. Bei einem Update das vorhandene JARVIS-App-Passwort weiterverwenden.
 2. In **Einstellungen → Add-ons/Apps → Hermes Assistant → Konfiguration**
-   die folgenden Optionen speichern und das Add-on neu starten.
+   die Optionen speichern und das Add-on neu starten.
 
 | Option | Wert |
 | --- | --- |
-| `talk_enabled` | Einschalten. Standardmäßig aus. |
-| `talk_calls_enabled` | Schaltet zusätzlich Live-Anrufe ein. Standardmäßig aus. Wyoming Piper ist dafür erforderlich. |
-| `talk_url` | HTTPS-Basisadresse von Nextcloud, bei Unterordnern z. B. `https://cloud.example.org/nextcloud`. |
-| `talk_username` | Konto-ID von Hermes in Nextcloud. |
-| `talk_app_password` | App-Passwort des Hermes-Kontos. |
-| `talk_allowed_users` | Liste der tatsächlichen Nextcloud-Konto-IDs, die Hermes anschreiben dürfen. |
-| `talk_allowed_rooms` | Optionale Liste der Tokens aus den Talk-Raumlinks. Leer erlaubt alle lokalen 1:1-DMs mit erlaubten Benutzern. |
-| `talk_piper_endpoint` | Interne Wyoming-Adresse, z. B. `tcp://<piper-add-on-hostname>:10200`. Leer aktiviert Textbetrieb. |
-| `api_server_enabled` und `api_server_key` | API eingeschaltet lassen und den vorhandenen Schlüssel mit mindestens 16 Zeichen verwenden. |
+| `talk_enabled` | JARVIS einschalten. |
+| `talk_url` | Gemeinsame HTTPS-Basisadresse von Nextcloud, ggf. mit Installationspfad. |
+| `talk_username`, `talk_app_password` | Bestehende Konto-ID und App-Passwort für JARVIS. |
+| `talk_allowed_users` | Erlaubte Nextcloud-Konto-IDs für JARVIS. Groß- und Kleinschreibung beachten, beispielsweise `Marcel`. |
+| `talk_allowed_rooms` | Optionale Raumtokens für JARVIS. Leer erlaubt alle lokalen 1:1-DMs mit erlaubten Benutzern. |
+| `talk_friday_enabled` | FRIDAY einschalten. Standardmäßig aus. |
+| `talk_friday_username`, `talk_friday_app_password` | Eigene Konto-ID und eigenes App-Passwort für FRIDAY. |
+| `talk_friday_allowed_users` | Eigene Benutzerliste. Leer übernimmt die erlaubten Benutzer von JARVIS. |
+| `talk_friday_allowed_rooms` | Optionale Raumtokens für FRIDAY. Leer erlaubt alle lokalen 1:1-DMs mit den für FRIDAY erlaubten Benutzern. |
+| `talk_piper_endpoint` | Gemeinsame interne Wyoming-Adresse, z. B. `tcp://core-piper:10200`, sofern dieser Hostname für deinen Piper-Dienst erreichbar ist. Leer aktiviert Textbetrieb. |
+| `talk_piper_voice` | Deutsche Piper-Stimme für JARVIS, standardmäßig `de_DE-thorsten-medium` (männlich). |
+| `talk_friday_piper_voice` | Deutsche Piper-Stimme für FRIDAY, standardmäßig `de_DE-eva_k-x_low` (weiblich). |
+| `talk_calls_enabled` | Live-Anrufe für die aktivierten Kontakte einschalten. Wyoming Piper ist erforderlich. |
+| `api_server_enabled`, `api_server_key` | API eingeschaltet lassen und den vorhandenen Schlüssel mit mindestens 16 Zeichen verwenden. |
 
-In der iPhone-App **Nextcloud Talk** mit deinem eigenen erlaubten Konto eine
-Unterhaltung mit Hermes öffnen. Nach der Talk-Verbindungsmeldung im Add-on-Protokoll
-eine neue Textnachricht senden. Teste den Kontext mit „Merke dir die Farbe Blau“
-und „Welche Farbe habe ich genannt?“. Bei eingerichtetem Piper kannst du dieselbe
-Frage als Sprachnachricht aufnehmen. Die Antwort erscheint im Gespräch als
-Sprachnachricht mit Wiedergabeknopf.
+Öffne in **Nextcloud Talk** auf dem iPhone mit deinem erlaubten Konto je einen
+privaten Chat mit JARVIS und FRIDAY. Sende in beiden eine neue englische
+Nachricht und danach eine native Sprachnachricht. Die Kontakte antworten auf
+Deutsch. Sprachantworten erscheinen mit einem Wiedergabeknopf.
 
-Der Worker verlangt die Talk-Raum-API v4 und die Fähigkeiten `chat-v2` und
-`chat-reference-id`. Für Voice Notes kommt `voice-message-sharing` hinzu.
-Der Agent muss für `/v1/chat/completions` den authentifizierten
-`X-Hermes-Session-Id`-Header unterstützen. Die im Image gepinnte Agent-Version
-enthält diese Schnittstelle. Ein Fehler dazu im Protokoll kann bei einem
-älteren persistenten Agent-Checkout durch `hermes update` behoben werden.
+Beide Kontakte verwenden das bestehende Hermes-Gateway auf Port `8642` und
+dessen Modellanmeldung, etwa den vorhandenen Codex-Login. Die Bridge setzt bei
+jedem Text-, Sprachnachrichten- und Anrufturn die passende Persona und Deutsch
+als Antwortsprache. Sie trennt die Verläufe mit authentifizierten
+`X-Hermes-Session-Id`-Sitzungen pro Kontakt und DM sowie einer frischen Sitzung
+pro Anruf. Benannte Hermes-Profile haben im gepinnten Build eigene API-Schlüssel
+und eigene Codex-Anmeldedaten. Die API-Sitzungen erlauben beiden Kontakten,
+die bestehende Gateway- und Modellanmeldung zu verwenden. Talk verbindet sich
+ausgehend per HTTPS. Der Host-Port `8642/tcp` kann für diese Integration leer bleiben.
 
-Whisper lädt beim ersten Gebrauch das öffentliche, mehrsprachige
-`faster-whisper-small`-Modell (ca. 470 MB). Danach bleibt es unter
-`/data/hermes/talk/models` im Cache. Audiodaten werden auf der CPU
-transkribiert. Das Transkript wird wie eine Textnachricht über das konfigurierte
-Hermes-Modell verarbeitet. Eingehendes Audio ist auf 20 MB und drei Minuten
-begrenzt. Antwortdateien bleiben im Nextcloud-Konto unter `Hermes-Talk/`,
-solange die Nachrichten sie verwenden. Wyoming Piper benötigt eine vom
-Add-on erreichbare Adresse im vertrauenswürdigen internen Netz.
+Whisper verwendet für Sprachnachrichten und Anrufe lokal `de`. Beim ersten
+Gebrauch lädt es das öffentliche `faster-whisper-small`-Modell (ca. 470 MB)
+nach `/data/hermes/talk/models`. Das Transkript geht wie eine Textnachricht an
+das konfigurierte Hermes-Modell. Eingehendes Audio ist auf 20 MB und drei
+Minuten begrenzt. Die Antwortdateien liegen im jeweiligen Nextcloud-Konto
+unter `Hermes-Talk/`. Die Talk-Instanz benötigt die Raum-API v4, `chat-v2`,
+`chat-reference-id` und für native Voice Notes `voice-message-sharing`.
 
-Bei Fehlern im Add-on-Protokoll nach **Nextcloud Talk** suchen. Die Meldungen
-unterscheiden Talk-Anmeldung, Chat, WebDAV, Whisper, Piper und Hermes-API.
+Der konfigurierte Piper-Dienst muss beide Stimmnamen in seiner Wyoming-Antwort
+auf `Describe` als deutsch anbieten. Wähle unter **Konfiguration** die exakten
+Namen dieses Dienstes. Die Stimmwahl wird bei jeder Synthese mitgesendet.
+Wenn eine Stimme fehlt oder die Synthese scheitert, kommt eine DM-Antwort
+als Text. Anrufe protokollieren den Fehler und warten auf die nächste Wortmeldung.
+
+Im Add-on-Protokoll steht der Kontakt bei jeder Talk-Meldung dabei.
+
+- **Piper DNS/TCP**. Internen Hostnamen, Port und laufenden Dienst prüfen.
+- **Piper Wyoming-Protokoll**. Der Dienst muss auf `Describe` mit `Info`
+  und auf `Synthesize` mit Wyoming-Audio antworten.
+- **Piper Stimmwahl**. Bereitgestellte deutsche Stimme im selben Dienst prüfen.
+- **Piper Audio-Konvertierung**. Wyoming lieferte Audio, das FFmpeg nicht in
+  ein verwendbares MP3 umwandeln konnte.
+- **Talk-Sprachfreigabe**. Ist die Aufnahme im Browser abspielbar, prüfe mit dem
+  betroffenen Talk-Konto, ob dieselbe Datei unter **Dateien** sichtbar ist
+  und ob das App-Passwort Dateizugriff hat. Sende danach eine neue native
+  Sprachnachricht. Ein Platzhalter wird lokal abgefangen.
+
 ### Live-Anrufe
 
-1. Einen Text-DM mit Hermes öffnen und eine Nachricht senden.
-2. Nach erfolgreichem Voice-Note-Test `talk_calls_enabled` aktivieren und das
-   Add-on neu starten. Das Hermes-Konto muss sich mit dem App-Passwort am
-   Talk-Webclient anmelden können. Der Worker unterstützt dessen englische
-   und deutsche Anrufschaltflächen.
-3. Den Audioanruf aus dem privaten iPhone-DM starten, sprechen, eine Antwort
-   abwarten und während der nächsten Antwort erneut sprechen. Hermes stoppt
-   die laufende Ausgabe bei erkannter Sprache. Auflegen und erneut anrufen
-   prüft den Sitzungswechsel.
+1. Nach dem Voice-Note-Test `talk_calls_enabled` einschalten und das Add-on
+   neu starten. Beide aktivierten Konten müssen sich mit ihrem App-Passwort
+   am Talk-Webclient anmelden können.
+2. JARVIS und FRIDAY einzeln aus ihrem privaten iPhone-DM anrufen. Sprich
+   und warte auf die Antwort im selben Anruf. Wenn du erneut sprichst, stoppt
+   der Worker die laufende Wiedergabe. Jeder neue Anruf startet eine eigene Sitzung.
 
-Der Call-Worker akzeptiert einen Anruf erst, wenn Nextcloud einen aktiven
-Anruf für den erlaubten 1:1-Raum meldet und die Anruf-API genau eine aktive
-Sitzung des erlaubten Gegenübers ausweist. Das Add-on startet dafür einen
-Headless-Browser mit einer synthetischen Mikrofonspur. Der Audioempfang
-verarbeitet nur eingehende WebRTC-Spuren. Jeder Anruf hat eine eigene
-Hermes-Sitzung. Zwischen Anrufen wird Chromium beendet.
+Der Worker akzeptiert nur aktive Anrufe in erlaubten lokalen 1:1-Räumen mit
+genau einer aktiven Sitzung des erlaubten Gegenübers. Pro Anruf startet er
+einen separaten Headless-Browser. Die synthetische Mikrofonspur für die
+Antwort und der Empfang eingehender WebRTC-Spuren laufen getrennt.
 
-Text und Voice Notes benötigen weder HPB noch TURN. Der Call-Pfad wurde
-mit Nextcloud 32.0.15 und Talk 22.0.20 geprüft. Im selben LAN kann WebRTC
-eine direkte Medienverbindung nutzen. Bei NAT, Mobilfunk, restriktiver
-Firewall oder fehlenden direkten ICE-Kandidaten muss ein passender
-[TURN-Dienst](https://nextcloud-talk.readthedocs.io/en/stable/TURN/) von
-beiden Endpunkten erreichbar sein. TURN über TCP funktionierte im
-isolierten Test. Wenn Talk einen High Performance Backend (HPB) verwendet,
-müssen beide Endpunkte auch den konfigurierten Signaling-WebSocket und den
-Medienpfad erreichen. Der isolierte Test verwendete Talk-Signaling ohne
-HPB. Für Konfigurationen mit Aufzeichnungszustimmung ist eine separate
-Prüfung nötig. Teste am iPhone zuerst über WLAN und dann über den
-vorgesehenen externen Zugang.
+Text und Voice Notes benötigen weder HPB noch TURN. Bei NAT, Mobilfunk oder
+fehlenden direkten ICE-Kandidaten muss ein passender
+[TURN-Dienst](https://nextcloud-talk.readthedocs.io/en/stable/TURN/) von beiden
+Endpunkten erreichbar sein. Wenn Talk einen High Performance Backend (HPB)
+verwendet, müssen beide Endpunkte den Signaling-WebSocket und den Medienpfad
+erreichen. Teste am iPhone zuerst über WLAN und dann über den vorgesehenen
+externen Zugang.

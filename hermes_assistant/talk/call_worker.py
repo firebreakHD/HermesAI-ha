@@ -81,11 +81,11 @@ class VoiceActivity:
 
 
 class Dialogue:
-    def __init__(self, page, hermes, whisper, piper):
+    def __init__(self, page, hermes, whisper, settings):
         self.page = page
         self.hermes = hermes
         self.whisper = whisper
-        self.piper = piper
+        self.settings = settings
         self.session = "talk-call-" + uuid.uuid4().hex
         self.revision = 0
         self.turns = set()
@@ -111,7 +111,7 @@ class Dialogue:
                 reply = await self.hermes.answer(self.session, uuid.uuid4().hex, prompt, True)
                 if revision != self.revision:
                     return
-                audio = await piper_audio(self.piper, reply)
+                audio = await piper_audio(self.settings.piper, reply, self.settings.voice)
                 if revision == self.revision:
                     await self.page.evaluate("audio => window.hermesMedia.play(audio)", base64.b64encode(audio).decode("ascii"))
             except ServiceError as error:
@@ -233,8 +233,8 @@ class CallWorker:
                 first_run = page.locator("#firstrunwizard").get_by_role(
                     "button", name=re.compile(r"^(Close|Schließen)", re.I),
                 ).first
-                if await first_run.is_visible():
-                    await first_run.click(timeout=2000)
+                # Nextcloud can mount the welcome dialog after the call button appears.
+                await page.add_locator_handler(first_run, lambda button: button.click(timeout=3000))
                 await page.get_by_role("button", name=JOIN).first.click(timeout=12000)
                 dialog = page.get_by_role("dialog").filter(has=page.get_by_role("button", name=JOIN))
                 join_button = dialog.get_by_role("button", name=JOIN).first
@@ -266,7 +266,7 @@ class CallWorker:
                 await browser.close()
 
     async def listen(self, page, room, peer, call, detector):
-        dialogue = Dialogue(page, self.hermes, self.whisper, self.settings.piper)
+        dialogue = Dialogue(page, self.hermes, self.whisper, self.settings)
         check_at = 0.0
         last_connected = time.monotonic()
         connected = False
@@ -293,10 +293,10 @@ class CallWorker:
             await dialogue.close()
 
 
-async def main():
+async def main(persona):
     options = json.loads(Path("/data/options.json").read_text())
-    settings = Settings.load(options)
-    if settings is None or options.get("talk_calls_enabled") is not True:
+    settings = Settings.load(options, persona=persona)
+    if settings is None or not settings.calls:
         return 0
     if not settings.piper:
         LOG.error("Talk-Anruf: Zum Einschalten einen Wyoming-Piper-Endpunkt eintragen.")
@@ -305,7 +305,7 @@ async def main():
     async with aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=45), cookie_jar=aiohttp.DummyCookieJar(),
     ) as http:
-        worker = CallWorker(settings, TalkClient(http, settings), Hermes(http, settings.api_key),
+        worker = CallWorker(settings, TalkClient(http, settings), Hermes(http, settings),
                             Whisper(Path("/data/hermes/talk/models")))
         delay = 5
         while True:
@@ -319,12 +319,13 @@ async def main():
 
 if __name__ == "__main__":
     os.umask(0o077)
-    logging.basicConfig(level=logging.INFO, format="[Nextcloud Talk] %(message)s")
+    persona = "FRIDAY" if sys.argv[1:] == ["FRIDAY"] else "JARVIS"
+    logging.basicConfig(level=logging.INFO, format=f"[Nextcloud Talk {persona}] %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpx2").setLevel(logging.WARNING)
     logging.getLogger("faster_whisper").setLevel(logging.WARNING)
     try:
-        sys.exit(asyncio.run(main()))
+        sys.exit(asyncio.run(main(persona)))
     except asyncio.CancelledError:
         sys.exit(0)
     except ServiceError as error:

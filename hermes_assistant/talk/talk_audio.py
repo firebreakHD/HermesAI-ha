@@ -3,6 +3,7 @@
 import asyncio
 import json
 import math
+import socket
 import subprocess
 
 from talk_client import InvalidVoice, MAX_VOICE_BYTES, ServiceError
@@ -75,49 +76,84 @@ class Whisper:
                 self.model = WhisperModel(model_path, device="cpu", compute_type="int8",
                                           cpu_threads=2, local_files_only=True)
             samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768
-            segments, _ = self.model.transcribe(samples, beam_size=1, vad_filter=True)
+            segments, _ = self.model.transcribe(samples, language="de", beam_size=1, vad_filter=True)
             return " ".join(segment.text.strip() for segment in segments).strip()
         except Exception:
             raise ServiceError("Whisper: lokales Modell konnte nicht geladen werden oder Transkription fehlgeschlagen.") from None
 
 
-async def piper_audio(endpoint, text):
+class PiperError(ServiceError):
+    """A speech output failure that still permits a text reply."""
+
+
+async def piper_pcm(endpoint, text, voice):
     from wyoming.audio import AudioChunk, AudioStart, AudioStop
     from wyoming.event import async_read_event, async_write_event
-    from wyoming.tts import Synthesize
+    from wyoming.info import Describe, Info
+    from wyoming.tts import Synthesize, SynthesizeVoice
 
     try:
+        reader, writer = await asyncio.wait_for(asyncio.open_connection(*endpoint), timeout=5)
+    except socket.gaierror:
+        raise PiperError("Piper DNS: Der konfigurierte Wyoming-Hostname ist nicht auflösbar.") from None
+    except (OSError, TimeoutError):
+        raise PiperError("Piper DNS/TCP: Keine Verbindung zum konfigurierten Wyoming-Port.") from None
+
+    phase = "Describe/Info"
+    try:
+        async with asyncio.timeout(10):
+            await async_write_event(Describe().event(), writer)
+            event = await async_read_event(reader)
+            if event is None or not Info.is_type(event.type):
+                raise ValueError
+            voices = [candidate for program in Info.from_event(event).tts for candidate in program.voices]
+        matches = [candidate for candidate in voices if candidate.name == voice]
+        if not matches:
+            raise PiperError(f"Piper Stimmwahl: Der Wyoming-Dienst bietet '{voice}' nicht an. "
+                             "Stimme im Piper-Dienst bereitstellen oder Add-on-Konfiguration anpassen.")
+        if not any(language.lower().replace("_", "-").split("-")[0] == "de"
+                   for match in matches for language in match.languages):
+            raise PiperError(f"Piper Stimmwahl: '{voice}' wird vom Wyoming-Dienst nicht als Deutsch angeboten.")
+
+        phase = "Synthesize/Audio"
         async with asyncio.timeout(90):
-            reader, writer = await asyncio.open_connection(*endpoint)
-            try:
-                await async_write_event(Synthesize(text=text[:6000]).event(), writer)
-                await writer.drain()
-                start = None
-                pcm = bytearray()
-                while event := await async_read_event(reader):
-                    if AudioStart.is_type(event.type):
-                        start = AudioStart.from_event(event)
-                        if (start.rate not in {16000, 22050, 24000, 44100, 48000}
-                                or start.width != 2 or start.channels != 1 or pcm):
-                            raise ValueError
-                    elif AudioChunk.is_type(event.type):
-                        chunk = AudioChunk.from_event(event)
-                        if (start is None or (chunk.rate, chunk.width, chunk.channels)
-                                != (start.rate, start.width, start.channels)):
-                            raise ValueError
-                        pcm.extend(chunk.audio)
-                        if len(pcm) > min(MAX_VOICE_BYTES, start.rate * 2 * MAX_SECONDS):
-                            raise ValueError
-                    elif AudioStop.is_type(event.type) and start is not None and pcm:
-                        break
-                    else:
+            await async_write_event(Synthesize(text=text[:6000], voice=SynthesizeVoice(name=voice)).event(),
+                                    writer)
+            start = None
+            pcm = bytearray()
+            while event := await async_read_event(reader):
+                if AudioStart.is_type(event.type):
+                    if start is not None:
                         raise ValueError
+                    start = AudioStart.from_event(event)
+                    if (start.rate not in {16000, 22050, 24000, 44100, 48000}
+                            or start.width != 2 or start.channels != 1):
+                        raise ValueError
+                elif AudioChunk.is_type(event.type):
+                    chunk = AudioChunk.from_event(event)
+                    if (start is None or (chunk.rate, chunk.width, chunk.channels)
+                            != (start.rate, start.width, start.channels)):
+                        raise ValueError
+                    pcm.extend(chunk.audio)
+                    if len(pcm) > min(MAX_VOICE_BYTES, start.rate * 2 * MAX_SECONDS):
+                        raise ValueError
+                elif AudioStop.is_type(event.type) and start is not None and pcm and len(pcm) % 2 == 0:
+                    return start.rate, pcm
                 else:
                     raise ValueError
-            finally:
-                writer.close()
+            raise ValueError
+    except (OSError, TimeoutError, EOFError, ValueError, TypeError, KeyError, AttributeError):
+        raise PiperError(f"Piper Wyoming-Protokoll ({phase}): Keine gültige Dienstantwort. "
+                         "Piper-Dienst und Voice-Installation prüfen.") from None
+    finally:
+        writer.close()
+
+
+async def piper_audio(endpoint, text, voice):
+    rate, pcm = await piper_pcm(endpoint, text, voice)
+    try:
         process = await asyncio.create_subprocess_exec(
-            "ffmpeg", "-nostdin", "-v", "error", "-f", "s16le", "-ar", str(start.rate),
+            "ffmpeg", "-nostdin", "-v", "error", "-f", "s16le", "-ar", str(rate),
             "-ac", "1", "-i", "pipe:0", "-c:a", "libmp3lame", "-b:a", "64k", "-f", "mp3", "pipe:1",
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL,
@@ -131,5 +167,5 @@ async def piper_audio(endpoint, text):
         if process.returncode != 0 or not 0 < len(output) <= MAX_VOICE_BYTES:
             raise ValueError
         return output
-    except (OSError, TimeoutError, EOFError, ValueError, TypeError, KeyError):
-        raise ServiceError("Piper: Wyoming-Endpunkt nicht erreichbar oder ungültige Audioantwort.") from None
+    except (OSError, TimeoutError, ValueError):
+        raise PiperError("Piper Audio-Konvertierung: FFmpeg konnte kein MP3 aus dem Wyoming-Audio erzeugen.") from None
