@@ -35,7 +35,7 @@ jobs:
             test -f /opt/hermes-b1/b1.patch
             test -f /opt/hermes-b1/files/api/ha_person.py
             bash -n /run.sh
-            nginx -t
+            /usr/sbin/nginx -t
             python3 -m py_compile /opt/hermes-b1/apply.py
             test -x /usr/bin/chromium
             test -x /usr/bin/Xvnc
