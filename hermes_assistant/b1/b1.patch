@@ -1,0 +1,84 @@
+diff --git a/api/auth.py b/api/auth.py
+index 04bba1121..8976ad36a 100644
+--- a/api/auth.py
++++ b/api/auth.py
+@@ -861,6 +861,12 @@ def _trusted_auth_username(handler) -> str | None:
+ 
+ 
+ def _trusted_auth_bound_profile(handler) -> str | None:
++    # HA ingress supplies an opaque, stable user ID; never infer the person
++    # from a display name or silently select the default profile.
++    from api.ha_person import mapping_path, lookup
++    if mapping_path() is not None:
++        entry = lookup(_trusted_auth_username(handler))
++        return entry['profile'] if entry else None
+     mapping = _trusted_group_profile_map()
+     if mapping is None:
+         return None
+@@ -1007,7 +1013,11 @@ def ensure_trusted_auth_session(handler) -> dict | None:
+     cookie_value = parse_cookie(handler)
+     info = get_session_info(cookie_value) if cookie_value and verify_session(cookie_value) else None
+     if info and info.get('auth_type') != 'trusted':
+-        return _remember_trusted_auth_session(handler, info)
++        from api.ha_person import mapping_path
++        if mapping_path() is None:
++            return _remember_trusted_auth_session(handler, info)
++        invalidate_session(cookie_value)
++        info = None
+     if not is_trusted_auth_enabled():
+         if info:
+             invalidate_session(cookie_value)
+@@ -1239,6 +1249,27 @@ def check_auth(handler, parsed) -> bool:
+         return False
+     session_info = ensure_trusted_auth_session(handler)
+     if session_info:
++        from api.ha_person import mapping_path, lookup
++        if (mapping_path() is not None and session_info.get('auth_type') == 'trusted'
++                and lookup(session_info.get('username')) is None):
++            if parsed.path == '/ha-person':
++                return True
++            if parsed.path.startswith('/api/'):
++                body = b'{"error":"Personenzuordnung erforderlich"}'
++                handler.send_response(409)
++                handler.send_header('Content-Type', 'application/json')
++                handler.send_header('Content-Length', str(len(body)))
++                handler.end_headers()
++                handler.wfile.write(body)
++            else:
++                ingress_path = (handler.headers.get('X-Ingress-Path') or '').rstrip('/')
++                if not ingress_path.startswith('/') or '//' in ingress_path or '\r' in ingress_path or '\n' in ingress_path:
++                    ingress_path = ''
++                handler.send_response(302)
++                handler.send_header('Location', ingress_path + '/ha-person')
++                handler.send_header('Content-Length', '0')
++                handler.end_headers()
++            return False
+         if not trusted_session_allows_active_profile(session_info):
+             if parsed.path.startswith('/api/'):
+                 body = b'{"error":"Profile access forbidden"}'
+diff --git a/server.py b/server.py
+index adff2c140..deb86bd28 100644
+--- a/server.py
++++ b/server.py
+@@ -390,6 +390,10 @@ class Handler(BaseHTTPRequestHandler):
+             parsed = fold_api_path(self, urlparse(self.path))  # case-insensitive /api/ routing (#3943)
+             # Body-pending-aware: a body-bearing GET failing auth would poison reuse (#7550).
+             if not check_auth_or_close(self, parsed): return
++            if parsed.path == '/ha-person':
++                from api.auth import ensure_trusted_auth_session
++                from api.ha_person import handle as handle_ha_person
++                return handle_ha_person(self, ensure_trusted_auth_session(self))
+             result = handle_get(self, parsed)
+             if result is False:
+                 return j(self, {'error': 'not found'}, status=404)
+@@ -418,6 +422,10 @@ class Handler(BaseHTTPRequestHandler):
+             parsed = fold_api_path(self, urlparse(self.path))  # case-insensitive /api/ routing (#3943)
+             _is_csp_report_post = parsed.path == "/api/csp-report" and self.command == "POST"
+             if not _is_csp_report_post and not check_auth_or_close(self, parsed): return
++            if parsed.path == '/ha-person':
++                from api.auth import ensure_trusted_auth_session
++                from api.ha_person import handle as handle_ha_person
++                return handle_ha_person(self, ensure_trusted_auth_session(self))
+             result = route_func(self, parsed)
+             if result is False:
+                 return j(self, {'error': 'not found'}, status=404)

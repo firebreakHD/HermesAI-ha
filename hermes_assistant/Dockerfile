@@ -103,6 +103,7 @@ RUN uv venv --python /usr/bin/python3 /opt/hermes-talk/venv && \
 COPY talk/*.py talk/call_audio.js /opt/hermes-talk/
 
 COPY run.sh /run.sh
+COPY b1 /opt/hermes-b1
 COPY browser_bridge.py /browser_bridge.py
 COPY browser_setup.py /browser_setup.py
 COPY assistant_tools.py /assistant_tools.py
@@ -117,7 +118,9 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN chmod +x /run.sh /terminal-shell.sh /usr/local/bin/hermes-shared-chromium /usr/local/bin/hermes-beeper-desktop
 
 EXPOSE 8787 7681 8642 1456 9119
+# The ingress-only / route intentionally rejects local requests (403). Probe
+# nginx availability without requiring the optional, fail-closed WebUI process.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:8787/health || exit 1
+  CMD test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8787/health)" = 403 || exit 1
 
 CMD ["/run.sh"]
