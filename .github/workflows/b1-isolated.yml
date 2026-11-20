@@ -1,0 +1,58 @@
+name: B1 isolated add-on build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/b1-ha-ingress]
+
+permissions:
+  contents: read
+
+jobs:
+  b1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify scripts and B1 delivery on installed upstream commit
+        run: |
+          set -euo pipefail
+          bash -n hermes_assistant/run.sh
+          source="$RUNNER_TEMP/webui-app"
+          git clone --depth=1 --no-checkout https://github.com/nesquena/hermes-webui.git "$source"
+          git -C "$source" fetch --depth=1 origin 6ea12c1548d54095b1fe6f63f799bca61708ef44
+          git -C "$source" checkout --detach FETCH_HEAD
+          python3 hermes_assistant/b1/apply.py "$source" --no-update
+          B1_TEST_WEBUI_SOURCE="$source" python3 -m unittest discover -s hermes_assistant/tests -p test_b1_delivery.py -v
+          (cd "$source" && python3 -m unittest discover -s tests -p test_ha_person_assignment.py -v)
+      - name: Build add-on image without publishing
+        run: |
+          docker build --pull -t trc-ai-b1:ci hermes_assistant
+      - name: Check image contents and nginx syntax
+        run: |
+          docker run --rm --entrypoint /bin/bash trc-ai-b1:ci -ec '
+            test -f /opt/hermes-b1/apply.py
+            test -f /opt/hermes-b1/b1.patch
+            test -f /opt/hermes-b1/files/api/ha_person.py
+            bash -n /run.sh
+            /usr/sbin/nginx -t
+            python3 -m py_compile /opt/hermes-b1/apply.py
+            test -x /usr/bin/chromium
+            test -x /usr/bin/Xvnc
+            test -x /usr/local/bin/hermes-beeper-desktop
+            test -f /opt/hermes-talk/talk_worker.py
+          '
+      - name: Exercise container nginx and Docker healthcheck without HAOS
+        run: |
+          set -euo pipefail
+          id=$(docker run -d --entrypoint /usr/sbin/nginx trc-ai-b1:ci -c /etc/nginx/nginx.conf)
+          trap 'docker rm -f "$id" >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 20); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' "$id")
+            if [ "$status" = healthy ]; then break; fi
+            if [ "$status" = unhealthy ]; then docker logs "$id"; exit 1; fi
+            sleep 5
+          done
+          test "$(docker inspect --format '{{.State.Health.Status}}' "$id")" = healthy
+          test "$(docker exec "$id" curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8787/health)" = 403
+          test "$(docker exec "$id" curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8787/browser/)" = 403

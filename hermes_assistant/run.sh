@@ -170,11 +170,20 @@ if bashio::var.true "${BROWSER_ENABLED}"; then
     bashio::log.info 'Preparing Hermes native browser tooling (agent-browser)'
     "${AGENT_CLI}" pm install agent-browser || bashio::log.warning 'Native browser tooling could not be installed; see startup output. Chat startup continues.'
 fi
-if bashio::var.true "${AUTO_UPDATE_WEBUI}" && [ -d "${WEBUI_DIR}/.git" ]; then
-    (
-        git -C "${WEBUI_DIR}" fetch --depth=1 origin master &&
-        git -C "${WEBUI_DIR}" checkout --detach FETCH_HEAD
-    ) || bashio::log.warning 'Web UI update failed; starting the installed version'
+WEBUI_READY=false
+if [ -d "${WEBUI_DIR}/.git" ]; then
+    if bashio::var.true "${AUTO_UPDATE_WEBUI}"; then
+        b1_update=--update
+    else
+        b1_update=--no-update
+    fi
+    if python3 /opt/hermes-b1/apply.py "${WEBUI_DIR}" "${b1_update}"; then
+        WEBUI_READY=true
+    else
+        bashio::log.error 'B1 WebUI incompatible or dirty; WebUI disabled, gateway continues'
+    fi
+else
+    bashio::log.error 'WebUI checkout missing; WebUI disabled, gateway continues'
 fi
 
 mkdir -p /data/hermes/logs
@@ -241,21 +250,26 @@ from pm.environments import selected_venv, venv_python
 print(venv_python(selected_venv(Path(sys.argv[1]))))
 PY
 )
-WEBUI_REQUIREMENTS_HASH=$(sha256sum "${WEBUI_DIR}/requirements.txt" | awk '{print $1}')
-WEBUI_DEPS_MARKER=/data/hermes/.webui-dependencies
-WEBUI_DEPS_SIGNATURE="${AGENT_PYTHON}:${WEBUI_REQUIREMENTS_HASH}"
-if ! grep -Fxq "${WEBUI_DEPS_SIGNATURE}" "${WEBUI_DEPS_MARKER}" 2>/dev/null; then
-    bashio::log.info 'Installing Hermes Web UI dependencies into the Hermes runtime'
-    export UV_CACHE_DIR=/data/hermes/.cache/uv
-    uv pip install --python "${AGENT_PYTHON}" -r "${WEBUI_DIR}/requirements.txt"
-    printf '%s\n' "${WEBUI_DEPS_SIGNATURE}" > "${WEBUI_DEPS_MARKER}"
+if [ "${WEBUI_READY}" = true ]; then
+    WEBUI_REQUIREMENTS_HASH=$(sha256sum "${WEBUI_DIR}/requirements.txt" | awk '{print $1}')
+    WEBUI_DEPS_MARKER=/data/hermes/.webui-dependencies
+    WEBUI_DEPS_SIGNATURE="${AGENT_PYTHON}:${WEBUI_REQUIREMENTS_HASH}"
+    if ! grep -Fxq "${WEBUI_DEPS_SIGNATURE}" "${WEBUI_DEPS_MARKER}" 2>/dev/null; then
+        bashio::log.info 'Installing Hermes Web UI dependencies into the Hermes runtime'
+        export UV_CACHE_DIR=/data/hermes/.cache/uv
+        uv pip install --python "${AGENT_PYTHON}" -r "${WEBUI_DIR}/requirements.txt"
+        printf '%s\n' "${WEBUI_DEPS_SIGNATURE}" > "${WEBUI_DEPS_MARKER}"
+    fi
 fi
 
 export HERMES_INSTALL_DIR="${AGENT_DIR}"
 export HERMES_WEBUI_AGENT_DIR="${AGENT_DIR}"
 export HERMES_WEBUI_STATE_DIR=/data/hermes/webui
-export HERMES_WEBUI_HOST=0.0.0.0
+export HERMES_WEBUI_HOST=127.0.0.1
 export HERMES_WEBUI_PORT=${WEBUI_PORT}
+export HERMES_WEBUI_TRUSTED_AUTH_HEADER=X-Remote-User-Id
+export HERMES_WEBUI_TRUSTED_PROXY_CIDRS=127.0.0.1/32
+export HERMES_WEBUI_HA_PERSON_MAP=/data/hermes/webui/ha-person-map.json
 export HERMES_WEBUI_PYTHON="${AGENT_PYTHON}"
 export HERMES_CONFIG_PATH="${HERMES_CONFIG}"
 export HERMES_WEBUI_PRESERVE_ENV=1
@@ -313,6 +327,7 @@ if bashio::var.true "${BEEPER_ENABLED}"; then
     ) &
 fi
 
+if [ "${WEBUI_READY}" = true ]; then
 bashio::log.info "Starting Hermes Web UI through Home Assistant Ingress on :${INGRESS_PORT}"
 (
     set +e
@@ -326,6 +341,7 @@ bashio::log.info "Starting Hermes Web UI through Home Assistant Ingress on :${IN
         sleep 3
     done
 ) &
+fi
 
 if bashio::var.true "${ENABLE_TERMINAL}"; then
     bashio::log.info "Starting setup terminal on the Ingress path /terminal/"
